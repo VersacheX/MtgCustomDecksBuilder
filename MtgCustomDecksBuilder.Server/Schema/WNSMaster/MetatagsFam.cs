@@ -1,0 +1,22 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace MtgCustomDecksBuilder.Server.Schema.WNSMaster
+{
+    public partial class MetatagsFam
+    {
+        public int FamId { get; set; }
+        public short StorefrontId { get; set; }
+        public int? Urlid { get; set; }
+        public string? MetaTitle { get; set; }
+        public string? MetaDescription { get; set; }
+        public string? MetaKeywords { get; set; }
+        public string? Content { get; set; }
+        public string? FamUrlforSeo { get; set; }
+        public string? InternalNotes { get; set; }
+        public string? Header { get; set; }
+
+        public virtual ProdsFamily Fam { get; set; } = null!;
+        public virtual StandardUrl? Url { get; set; }
+    }
+}

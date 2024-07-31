@@ -1,0 +1,6 @@
+@MtgCustomDecksBuilder.Server_HostAddress = http://localhost:4276
+
+GET {{MtgCustomDecksBuilder.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

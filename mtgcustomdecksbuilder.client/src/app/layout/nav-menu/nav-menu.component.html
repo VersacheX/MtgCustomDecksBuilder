@@ -1,0 +1,309 @@
+
+<nav id="sidebar" [ngClass]="SideBarOpen ? 'show' : 'hide'" *ngIf="_authenticationService.IsLoggedIn">
+  <div id="sidebar-toggler" (click)="ToggleSideBar()">
+    <i class="fas fa-bars"></i>
+  </div>
+  <div class="sidebar-header">
+    <!--<h3>Menu</h3>-->
+  </div>
+  <ul class="list-unstyled components">
+    <li [ngClass]="this._currentRouterLocation.indexOf('counter') == 0 ? 'active' : ''">
+      <a class="nav-link" [routerLink]="['/counter']">
+        <i class="fa fa-calculator"></i>
+        <span class="col-auto">Counter</span>
+      </a>
+    </li>
+    <li [ngClass]="this._currentRouterLocation.indexOf('fetch-data') == 0 ? 'active' : ''">
+      <a class="nav-link" [routerLink]="['/fetch-data']">
+        <i class="fa fa-bluetooth"></i>
+        <span class="col-auto">Fetch data</span>
+      </a>
+    </li>
+
+
+
+    <!-- HOME -->
+    <li [ngClass]="this._currentRouterLocation == '' ? 'active' : ''">
+      <a class="nav-link" [routerLink]="['/']">
+        <i class="fa fa-home"></i>
+        <span class="col-auto">Home</span>
+      </a>
+    </li>
+
+    <!-- ORDERS -->
+    <li>
+      <a class="nav-link" style="cursor: pointer;" (click)="ToggleSubMenuItem('ordersSubmenu')">
+        <i class="fa fa-fax"></i>
+        <span class="col-auto">Orders</span>
+      </a>
+      <ul class="collapse list-unstyled" id="ordersSubmenu">
+        <li>
+          <a class="nav-link" [routerLink]="['/orders']">
+            <i class="fa fa-phone"></i>
+            <span class="col-auto">List</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-birthday-cake"></i>
+            <span class="col-auto">Take Order</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-bank"></i>
+            <span class="col-auto">Return Request</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- CUSTOMERS -->
+    <li>
+      <a class="nav-link" style="cursor: pointer;" (click)="ToggleSubMenuItem('customersSubmenu')">
+        <i class="fa fa-fax"></i>
+        <span class="col-auto">Customers</span>
+      </a>
+      <ul class="collapse list-unstyled" id="customersSubmenu">
+        <li>
+          <a class="nav-link" [routerLink]="['/customers-fraud-list']">
+            <i class="fa fa-phone"></i>
+            <span class="col-auto">Potential Fraud List</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- PRODUCTS -->
+    <li>
+      <a class="nav-link" style="cursor: pointer;" (click)="ToggleSubMenuItem('productsSubmenu')">
+        <i class="fa fa-fax"></i>
+        <span class="col-auto">Orders</span>
+      </a>
+      <ul class="collapse list-unstyled" id="productsSubmenu">
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-phone"></i>
+            <span class="col-auto">Manage</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-birthday-cake"></i>
+            <span class="col-auto">Categories</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-bank"></i>
+            <span class="col-auto">Bundles</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-bank"></i>
+            <span class="col-auto">Print Catalog</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-bank"></i>
+            <span class="col-auto">Product Reviews</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-bank"></i>
+            <span class="col-auto">Featured Products</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-bank"></i>
+            <span class="col-auto">Sample Products</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- MARKETING -->
+    <li>
+      <a class="nav-link" style="cursor: pointer;" (click)="ToggleSubMenuItem('marketingSubmenu')">
+        <i class="fa fa-fax"></i>
+        <span class="col-auto">Marketing</span>
+      </a>
+      <ul class="collapse list-unstyled" id="marketingSubmenu">
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-phone"></i>
+            <span class="col-auto">Email Marketing</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-birthday-cake"></i>
+            <span class="col-auto">Manage Coupons</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-bank"></i>
+            <span class="col-auto">Return Request</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-bank"></i>
+            <span class="col-auto">SEO Info For Keywords</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-bank"></i>
+            <span class="col-auto">SEO Info For Departments</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-bank"></i>
+            <span class="col-auto">SEO Info For Brands</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-bank"></i>
+            <span class="col-auto">SEO Info For Product Pages</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-bank"></i>
+            <span class="col-auto">Search Engine Friendly Urls</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-bank"></i>
+            <span class="col-auto">Affiliate Manage</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-bank"></i>
+            <span class="col-auto">Site Search Stats</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-bank"></i>
+            <span class="col-auto">Obsolete Content</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-bank"></i>
+            <span class="col-auto">Product Feeds Management</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-bank"></i>
+            <span class="col-auto">Deal of the Day</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-bank"></i>
+            <span class="col-auto">Site Search Redirects</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-bank"></i>
+            <span class="col-auto">Adwords Reports</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- MISCELLANEOUS -->
+    <li>
+      <a class="nav-link" style="cursor: pointer;" (click)="ToggleSubMenuItem('miscSubmenu')">
+        <i class="fa fa-fax"></i>
+        <span class="col-auto">Miscellaneous</span>
+      </a>
+      <ul class="collapse list-unstyled" id="miscSubmenu">
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-phone"></i>
+            <span class="col-auto">Shipping Rates</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-birthday-cake"></i>
+            <span class="col-auto">Order Imports</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-bank"></i>
+            <span class="col-auto">Dropshipping Invoices</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-phone"></i>
+            <span class="col-auto">Auto-Capture Conditions</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-phone"></i>
+            <span class="col-auto">Web Service Tool</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-phone"></i>
+            <span class="col-auto">GPS Crawler Data</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-phone"></i>
+            <span class="col-auto">Translations</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-phone"></i>
+            <span class="col-auto">Legit Script Product Matching</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-phone"></i>
+            <span class="col-auto">System Status</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- USERS -->
+    <li>
+      <a class="nav-link" style="cursor: pointer;" (click)="ToggleSubMenuItem('usersSubmenu')">
+        <i class="fa fa-fax"></i>
+        <span class="col-auto">Users</span>
+      </a>
+      <ul class="collapse list-unstyled" id="usersSubmenu">
+        <li>
+          <a class="nav-link" [routerLink]="['/']">
+            <i class="fa fa-phone"></i>
+            <span class="col-auto">Management</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</nav>

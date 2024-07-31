@@ -1,0 +1,20 @@
+{
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@angular/animations": "^18.1.1",
+    "@angular/common": "^18.1.1",
+    "@angular/core": "18.1.1",
+    "@angular/forms": "^18.1.1",
+    "@angular/platform-browser": "^18.1.1",
+    "@angular/router": "^18.1.1",
+    "@types/jquery": "^3.5.30",
+    "angular-datatables": "18.0.0",
+    "datatables.net": "^2.0.8",
+    "datatables.net-dt": "^2.0.8",
+    "jquery": "^3.7.1",
+    "rxjs": "^7.4.0",
+    "save": "^2.9.0",
+    "zone.js": "~0.14.3"
+  },
+  "version": "0.0.0"
+}

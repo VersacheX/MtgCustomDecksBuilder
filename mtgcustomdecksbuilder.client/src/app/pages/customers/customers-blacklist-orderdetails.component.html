@@ -1,0 +1,490 @@
+<div class="col-md-12" style="text-align: left">
+
+  <div class="row">
+    <div class="col-md-4" style="text-align: left">
+      <b>Altura Order ID# {{BusinessObjectId}}</b>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+
+
+      <table cellspacing="0" cellpadding="5" align="center" border="0" bgcolor="red">
+        <tr>
+          <td valign="middle" align="right">
+            <b>
+              <label id="lblFraudMatches" style="font-weight: bold;font-size: 13; color: white;">Fraud Matches: </label>
+            </b>
+          </td>
+          <td>
+            <p *ngIf="!orderDetailBlacklistOrders"><em>Loading...</em></p>
+            <table datatable [dtOptions]="featurelessTableOptions" *ngIf="orderDetailBlacklistOrders" width="100%">
+              <thead style="display: none;">
+                <tr>
+                  <th width="25%">Order Id</th>
+                  <th width="75%">Comments</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let order of orderDetailBlacklistOrders">
+                  <td>
+                    <a (click)='openOrderDetailsPopup(order.ProviderOrderId);'>{{order.ProviderOrderId}}</a>
+                  </td>
+                  <td>
+                    <font color="white">({{order.Comments}})</font>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </table>
+      <hr />
+      <div align="center">
+        <button id="btnRemoveFromFraudList" (click)="removeFromFraudList()">Remove from Fraud List</button>
+      </div>
+      <hr />
+
+      <div class="row">
+        <p *ngIf="!orderDetail"><em>Loading...</em></p>
+        <div class="col-md-12">
+          <table cellspacing="0" cellpadding="0" align="center" style="text-align: left;" border="0" *ngIf="orderDetail">
+            <tr>
+              <td valign="top" nowrap>
+                <b>Placed:</b>&nbsp;<label>{{orderDetail.DateTimeOrderPlaced | date:'medium'}}</label>
+                <div>
+                  <b>Placed By:</b>&nbsp;<label>{{orderDetail.UserName}}</label>
+                </div>
+                <br />
+                <b>Order Source:</b>&nbsp;
+                <label>{{orderDetail.SourceDesc}}</label>
+              </td>
+              <td>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+              </td>
+              <td valign="top">
+                <b>Ready To Process:&nbsp;</b>
+                <label>{{orderDetail.ReadyToProcess | date:'medium'}}</label><br />
+                <b>In Process:&nbsp;</b>
+                <label>{{orderDetail.InProcess | date:'medium'}}</label><br />
+                <b>Boxed:&nbsp;</b>
+                <label>{{orderDetail.ReadyForPickup | date:'medium'}}</label>&nbsp;
+                <label>{{getBoxedText()}}</label><br />
+                <b>Void:&nbsp;</b>
+                <label>{{orderDetail.Void | date:'medium'}}</label>&nbsp;
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <hr />
+
+      <div class="row">
+        <div class="col-md-12">
+          <p *ngIf="!orderDetail"><em>Loading...</em></p>
+          <table cellspacing="0" cellpadding="0" border="0" *ngIf="orderDetail">
+            <tr valign="top">
+              <td nowrap align="right">
+                <b>Billed to:</b>&nbsp;
+              </td>
+              <td style="text-align: left;">
+                <label>{{orderDetail.BillToFName}}</label>&nbsp;<label>{{orderDetail.BillToMName}}</label>&nbsp;<label>{{orderDetail.BillToLName}}</label><br />
+                <label>{{orderDetail.BillToAddress}}</label><br />
+                <div id="pnlBilledToAd2" *ngIf="orderDetail.BillToAddress2">
+                  <label>{{orderDetail.BillToAddress2}}</label>
+                </div>
+                <label>{{orderDetail.BillToCity}}</label>,&nbsp;<label>{{orderDetail.BillToState}}</label>
+                <label>{{orderDetail.BillToZip}}</label><br />
+                <label>{{orderDetail.BillToCountry}}</label><br />
+                <label>{{orderDetail.BillToPhone}}</label><br />
+                <label>{{orderDetail.BillToEmail}}</label>
+              </td>
+              <td>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+              </td>
+              <td nowrap align="right">
+                <b>&nbsp;&nbsp;Shipped to:</b>&nbsp;
+              </td>
+              <td style="text-align: left;">
+                <label>{{orderDetail.ShipToFName}}</label>&nbsp;<label>{{orderDetail.ShipToMName}}</label>&nbsp;<label>{{orderDetail.ShipToLName}}</label><br />
+                <label>{{orderDetail.ShipToAddress}}</label><br />
+                <div id="pnlShipToAd2" *ngIf="orderDetail.ShipToAddress2">
+                  <label>{{orderDetail.ShipToAddress2}}</label>
+                </div>
+                <label>{{orderDetail.ShipToCity}}</label>,&nbsp;<label>{{orderDetail.ShipToState}}</label>
+                <label>{{orderDetail.ShipToZip}}</label><br />
+                <label>{{orderDetail.CountryName}}</label><br />
+                <label>{{orderDetail.ShipToPhone}}</label><br />
+                <label>{{orderDetail.ShipToEmail}}</label>
+              </td>
+              <td>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+              </td>
+            </tr>
+            <tr valign="top">
+              <td align="right" colspan="7">
+                &nbsp;
+              </td>
+            </tr>
+          </table>
+          <table cellspacing="0" cellpadding="4" border="0" *ngIf="orderDetail">
+            <tr valign="top">
+              <td nowrap align="right">
+                <b>Customer Comments: </b>
+              </td>
+              <td>
+                <label ID="CustomerComments">{{orderDetail.CommentsFromConsumer}}</label>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <hr />
+
+      <div class="row">
+        <div class="col-md-12">
+          <p *ngIf="!orderDetailLineItems"><em>Loading...</em></p>
+          <table cellspacing="0" cellpadding="0" align="center" border="0" *ngIf="orderDetailLineItems">
+            <tr>
+              <td>
+                <table datatable [dtOptions]="featurelessTableOptions" width="100%">
+                  <thead>
+                    <tr>
+                      <th>Qty</th>
+                      <th style="text-align: center;">Item</th>
+                      <th>In Stock</th>
+                      <th>On Order</th>
+                      <th>Store Unit Price</th>
+                      <th>Consumer Unit Price</th>
+                      <th>Consumer Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let line of orderDetailLineItems">
+                      <td>{{line.Qty}}</td>
+                      <td style="text-align: left;">{{line.BrandDesc}}&nbsp;{{line.ProdName}}&nbsp;{{line.UnitNum | number: '1.2-2'}}&nbsp;{{line.UnitTypeDesc}}</td>
+                      <td>{{line.InStock}}</td>
+                      <td>{{line.OnOrder}}</td><!--There is a link here to view on order products through usp_adminsf_orderdetails_pendingexpecteddates_sel column: PO Num, Date Expected, Qty-->
+                      <td style="text-align: right;">{{line.PriceToStorefront|currency}}</td>
+                      <td style="text-align: right;">{{line.PriceToConsumer|currency}}</td>
+                      <td style="text-align: right;">{{(line.PriceToConsumer * line.Qty) | currency}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label *ngIf="orderDetailLineItems.length == 0">No line items</label>
+                <table cellspacing="0" cellpadding="5" align="right" border="0" *ngIf="orderDetailLineItems.length > 0">
+                  <tr>
+                    <td align="right" colspan="3">
+                      Subtotal:
+                    </td>
+                    <td align="right" width="10%">
+                      <label>{{(orderDetail.PubPriceTot > 0 ? orderDetail.PubPriceTot : orderDetail.StorefrontPriceTot) | currency}}</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="right" colspan="3">
+                      Tax:
+                    </td>
+                    <td align="right" width="10%">
+                      <label>{{orderDetail.SalesTaxAmount | currency}}</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="height: 19px" align="right" colspan="3">
+                      &nbsp;<label>{{orderDetail.ShipMethodDescToPublic}}</label>
+                      Shipping:
+                    </td>
+                    <td style="height: 19px" align="right" width="10%">
+                      <label>{{orderDetail.ShipAmount | currency}}</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="right" colspan="3">
+                      &nbsp;<label>{{orderDetail.CouponDesc}}</label>&nbsp;Coupons/Certificates:
+                    </td>
+                    <td align="right" width="10%">
+                      <label>{{orderDetail.CouponAppliedAmount | currency}}</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="height: 20px" align="right" colspan="3">
+                      GRAND TOTAL:
+                    </td>
+                    <td style="height: 20px" align="right" width="10%">
+                      <label>{{orderDetail.OrderGrandTotal | currency}}</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="right" colspan="3">
+                      TOTAL CHARGED/CLEARED:
+                    </td>
+                    <td align="right" width="10%">
+                      <label>$0.00<!--TOTAL CHARGED--></label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td align="right" colspan="3">
+                      BALANCE:
+                    </td>
+                    <td align="right" width="10%">
+                      <label>{{(orderDetail.OrderGrandTotal - 0.00) | currency}}</label><!--as Total Charged is always set to 0 this is a reflection of that-->
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <hr />
+
+      <div class="row">
+        <div class="col-md-12">
+          <table cellpadding="0" cellspacing="0" width="100%" border="0">
+            <tr>
+              <td valign="top">
+                <p *ngIf="!orderDetail"><em>Loading...</em></p>
+                <table cellpadding="0" cellspacing="0" border="0" *ngIf="orderDetail">
+                  <tr>
+                    <td colspan="2">
+                      <b>Order Billing Info:</b>&nbsp;
+                    </td>
+                  </tr>
+                  <tr>
+                    <td width="25">
+                      <img height="1" src="images/pixel.gif" width="25">
+                    </td>
+                    <td>
+                      Method:
+                      <label>{{orderDetail.PaymentMethod}}</label><br />
+                      <label>{{orderDetail.CCTypeCode}}</label>
+                      <label>{{'Last 4 digits ' + orderDetail.CCNumber}}</label>&nbsp;
+                      <label>{{orderDetail.CCExpMonth}}</label>/<label>{{orderDetail.CCExpYear}}</label><br />
+                      <label>{{orderDetail.NameAsOnCC}}</label>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="2">
+                      <b>Order Billing Transactions:</b><br />
+                      <!--<asp:Panel ID="pnlAuthNetLink" runat="server">
+                    <tr>
+                      <td>
+                        &nbsp;
+                      </td>
+                      <td>
+                        &nbsp;
+                      </td>
+                    </tr>
+                  </asp:Panel>
+                  <asp:Panel ID="pnlChargeBridgeLink" runat="server">
+                    <tr>
+                      <td>
+                        &nbsp;
+                      </td>
+                      <td>
+                        &nbsp;
+                      </td>
+                    </tr>
+                  </asp:Panel>
+                  <asp:Panel ID="pnlPaymentechLink" runat="server">
+                    <tr>
+                      <td>
+                        &nbsp;
+                      </td>
+                      <td>
+                        &nbsp;
+                      </td>
+                    </tr>
+                  </asp:Panel>-->
+                    </td>
+                  </tr>
+                </table>
+              </td>
+              <td valign="top">
+                <table cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td colspan="2">
+                      <b>Account Information:</b>&nbsp;
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <p *ngIf="!orderDetail ||  !orderDetailAccountInfo"><em>Loading...</em></p>
+                      <table cellspacing="0" cellpadding="0" border="0" *ngIf="orderDetail && orderDetailAccountInfo">
+                        <tr>
+                          <td colspan="2">
+                            <label>{{orderDetailAccountInfo.CCInfoFaxOnFile ? 'CC info fax on file' : 'CC info fax NOT on file'}}</label>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colspan="2">
+                            <label>{{orderDetailAccountInfo.CheckNotesBeforeShipping ? 'Check account notes prior to shipping' : 'No notes to check before shipping orders'}}</label>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colspan="2">
+                            <label>{{orderDetail.InsuranceRequired ? 'Insurance required' : 'Insurance is not required'}}</label>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td valign="top">
+                            CC Info:&nbsp;
+                          </td>
+                          <td>
+                            <label>{{orderDetailAccountInfo.CCTypeCode}}</label>
+                            <label>{{orderDetailAccountInfo.CCNumber}}</label><br />
+                            <label>{{orderDetailAccountInfo.CCExpMonth + '/' + orderDetailAccountInfo.CCExpYear}}</label><br />
+                            <label>{{orderDetailAccountInfo.NameAsOnCC}}</label>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            Account #:&nbsp;
+                          </td>
+                          <td>
+                            <label>{{orderDetailAccountInfo.AccountID}}</label>
+                          </td>
+                        </tr>
+                        <!--<tr>
+                      <td>
+                        Username:&nbsp;
+                      </td>
+                      <td>
+                        <label>{{UserName}}</label>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        Password:&nbsp;
+                      </td>
+                      <td>
+                        <label>{{UserPassword}}</label>
+                      </td>
+                    </tr>-->
+                        <tr>
+                          <td valign="top">
+                            Bill To:&nbsp;
+                          </td>
+                          <td>
+                            <label>{{orderDetailAccountInfo.BFName}}</label>&nbsp;<label>{{orderDetailAccountInfo.BMName}}</label>&nbsp;<label>{{orderDetailAccountInfo.BLName}}</label><br />
+                            <label>{{orderDetailAccountInfo.BAddress}}</label><br />
+                            <label *ngIf="orderDetailAccountInfo.BAddress2">{{orderDetailAccountInfo.BAddress2}}</label>
+                            <label>{{orderDetailAccountInfo.BCity}}</label>,
+                            <label>{{orderDetailAccountInfo.BState}}</label>
+                            <label>{{orderDetailAccountInfo.BZip}}</label><br />
+                            <label>{{orderDetailAccountInfo.BCountry}}</label><br />
+                            <label>{{orderDetailAccountInfo.BPhone}}</label><br />
+                            <label>{{orderDetailAccountInfo.BEmail}}</label>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td valign="top">
+                            Ship To:&nbsp;
+                          </td>
+                          <td>
+                            <label>{{orderDetailAccountInfo.SFName}}</label>&nbsp;<label>{{orderDetailAccountInfo.SMName}}</label>&nbsp;<label>{{orderDetailAccountInfo.SLName}}</label><br />
+                            <label>{{orderDetailAccountInfo.SAddress}}</label><br />
+                            <label *ngIf="orderDetailAccountInfo.SAddress2">{{orderDetailAccountInfo.SAddress2}}</label>
+                            <label>{{orderDetailAccountInfo.SCity}}</label>,
+                            <label>{{orderDetailAccountInfo.SState}}</label>
+                            <label>{{orderDetailAccountInfo.SZip}}</label><br />
+                            <label>{{orderDetailAccountInfo.CountryName}}</label><br />
+                            <label>{{orderDetailAccountInfo.SPhone}}</label><br />
+                            <label>{{orderDetailAccountInfo.SEmail}}</label>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <hr>
+
+      <div class="row">
+        <div class="col-md-12">
+          <p *ngIf="!orderDetailsShipInfo"><em>Loading...</em></p>
+          <label *ngIf="orderDetailsShipInfo && orderDetailsShipInfo.length == 0">Not shipped yet</label>
+          <table datatable [dtOptions]="featurelessTableOptions" *ngIf="orderDetailsShipInfo && orderDetailsShipInfo.length > 0">
+            <thead>
+              <tr>
+                <th>Shipment #</th>
+                <th>Ship Method</th>
+                <th>Ship Date</th>
+                <th>Weight</th>
+                <th>Tracking #</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let shipInfo of orderDetailsShipInfo">
+                <td>{{shipInfo.ShipmentNum}}</td>
+                <td>{{shipInfo.CarrierAndClassDesc}}</td>
+                <td>{{shipInfo.ShipDate | date:'medium'}}</td>
+                <td>{{shipInfo.PackageWeight | number:'1.2-2'}}</td>
+                <td>
+                  {{shipInfo.TrackingNum}}
+                  <!--<br />
+                  <asp:DataGrid ID="dgUpsBilling" Visible="false" runat="server" AutoGenerateColumns="False"
+                                CssClass="black_normal_med" HeaderStyle-Font-Bold="True" Width="100%">
+                    <Columns>
+                      <asp:BoundColumn DataField="TransactionCode" HeaderText="Code" />
+                      <asp:BoundColumn DataField="ServiceDescription" HeaderText="Description" />
+                      <asp:BoundColumn DataField="TotalCharges" HeaderText="Net Charges" DataFormatString="{0:C}" />
+                      <asp:BoundColumn DataField="Incentive" HeaderText="Incentive" DataFormatString="{0:C}" />
+                    </Columns>
+                  </asp:DataGrid>-->
+                </td>
+              </tr>
+              <!--<tr>
+                <td colspan="5">
+                  <hr size="4" color="black" width="100%">
+                  <asp:DataGrid ID="dgUpsBillingByOrderOnly" Visible="false" BackColor="#ffffcc" runat="server"
+                                AutoGenerateColumns="False" CssClass="black_normal_med" HeaderStyle-Font-Bold="True"
+                                Width="100%">
+                    <Columns>
+                      <asp:BoundColumn DataField="TransactionCode" HeaderText="Code" />
+                      <asp:BoundColumn DataField="ServiceDescription" HeaderText="Description" />
+                      <asp:BoundColumn DataField="TotalCharges" HeaderText="Net Charges" DataFormatString="{0:C}" />
+                      <asp:BoundColumn DataField="Incentive" HeaderText="Incentive" DataFormatString="{0:C}" />
+                    </Columns>
+                  </asp:DataGrid>
+                </td>
+              </tr>-->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <hr/>
+
+      <div class="row">
+        <div class="col-md-12">
+
+          <p *ngIf="!orderDetailActionLogs"><em>Loading...</em></p>
+          <table datatable [dtOptions]="featurelessTableOptions" *ngIf="orderDetailActionLogs">
+            <thead>
+              <tr>
+                <th>Date And Time</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let log of orderDetailActionLogs">
+                <td>{{log.DateAndTime}}</td>
+                <td>{{log.Description}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

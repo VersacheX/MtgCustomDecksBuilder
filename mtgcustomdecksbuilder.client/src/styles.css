@@ -1,0 +1,44 @@
+/* You can add global styles to this file, and also import other style files */
+@import url("../node_modules/bootstrap/dist/css/bootstrap.min.css");
+
+.link-primary {
+  cursor: pointer;
+}
+
+a:hover {
+    cursor: pointer
+}
+
+
+.HLine {
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: #999999;
+}
+
+.ItemTitle {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  font-style: normal;
+  line-height: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-indent: 2pt;
+  vertical-align: middle;
+  margin-left: 2px;
+  padding-left: 2px;
+  text-align: left;
+}
+.ItemTitleRight {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  font-style: normal;
+  line-height: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-indent: 2pt;
+  vertical-align: middle;
+  margin-left: 2px;
+  padding-left: 2px;
+  text-align: right;
+}

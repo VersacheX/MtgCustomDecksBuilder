@@ -1,0 +1,36 @@
+<h1 id="tableLabel">Mtg Cards</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+<div class="row">
+  <div class="col-md-12">
+    <label>Card Name</label>
+    <input type="text" [(ngModel)]="searchCriteria.Name" />
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <button (click)="LoadDataGridsData()">Search</button>
+  </div>
+</div>
+
+<p *ngIf="!mtgCards"><em>Loading...</em></p>
+<table datatable *ngIf="mtgCards" width="100%">
+  <thead>
+    <tr>
+      <th width="25%">Name</th>
+      <th width="25%">Image</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let card of mtgCards">
+      <td width="25%">
+        {{card.name}}<br/><br/><i>{{card.flavor}}</i>
+      </td>
+      <td>
+        <img [(src)]="card.imageUrl" />
+      </td>
+    </tr>
+  </tbody>
+
+</table>
