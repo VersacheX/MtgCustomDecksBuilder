@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <SpaRoot>..\providersolutionangularcore.client</SpaRoot>
+    <SpaRoot>..\mtgcustomdecksbuilder.client</SpaRoot>
     <SpaProxyLaunchCommand>npm start</SpaProxyLaunchCommand>
     <SpaProxyServerUrl>https://localhost:4200</SpaProxyServerUrl>
   </PropertyGroup>
@@ -29,9 +29,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\providersolutionangularcore.client\mtgcustomdecksbuilder.client.esproj">
+    <ProjectReference Include="..\mtgcustomdecksbuilder.client\mtgcustomdecksbuilder.client.esproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+    <ProjectReference Include="..\Persistence\Persistence.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\SearchCriteria\" />
   </ItemGroup>
 
 </Project>

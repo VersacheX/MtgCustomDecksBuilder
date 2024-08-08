@@ -8,6 +8,8 @@ import { CommonModule } from '@angular/common';
 
 import { DataTablesModule } from "angular-datatables";
 import { BsDatepickerModule } from 'ngx-bootstrap/datepicker';
+import { ModalModule, BsModalRef, BsModalService } from 'ngx-bootstrap/modal';
+import { ComponentLoaderFactory } from 'ngx-bootstrap/component-loader';
 
 import { AuthGuard, JwtInterceptor } from './_helpers';
 
@@ -23,11 +25,12 @@ import {
 } from './user-account';
 
 import { HomeComponent } from './pages/home/home.component';
-import { CounterComponent } from './pages/counter/counter.component';
-import { FetchDataComponent } from './pages/fetch-data/fetch-data.component';
 
-import { CustomersFraudListComponent, CustomersBlackListOrderDetailComponent } from './pages/customers';
-import { OrdersComponent } from './pages/orders';
+import { SearchCardsComponent } from './pages/search-cards/search-cards.component';
+import { SetSearchComponent } from './pages/search-sets/search-sets.component';
+import { DownloadMtgDataComponent } from './pages/download-mtg-data/download-mtg-data.component';
+import { HomebrewsComponent } from './pages/homebrew/homebrews.component';
+import { EditHomebrewComponent } from './pages/homebrew/popup/edit-homebrew.component';
 
 
 
@@ -42,12 +45,12 @@ import { OrdersComponent } from './pages/orders';
     LoginComponent,
 
     HomeComponent,
-    CounterComponent,
-    FetchDataComponent,
+    SearchCardsComponent,
+    SetSearchComponent,
+    DownloadMtgDataComponent,
 
-    CustomersFraudListComponent,
-    CustomersBlackListOrderDetailComponent,
-    OrdersComponent
+    HomebrewsComponent,
+    EditHomebrewComponent
   ],
   imports: [
     CommonModule,
@@ -57,6 +60,7 @@ import { OrdersComponent } from './pages/orders';
 
     DataTablesModule,
     BsDatepickerModule,
+    ModalModule,
 
     RouterModule.forRoot([
       {
@@ -65,18 +69,17 @@ import { OrdersComponent } from './pages/orders';
           { path: 'login', component: LoginComponent },
 
           { path: '', component: HomeComponent, pathMatch: 'full', canActivate: [AuthGuard] },
-          { path: 'counter', component: CounterComponent, canActivate: [AuthGuard] },
-          { path: 'fetch-data', component: FetchDataComponent, canActivate: [AuthGuard] },
+          { path: 'search-cards', component: SearchCardsComponent, canActivate: [AuthGuard] },
+          { path: 'search-sets', component: SetSearchComponent, canActivate: [AuthGuard] },
+          { path: 'download-mtg-data', component: DownloadMtgDataComponent, canActivate: [AuthGuard] },
 
-          { path: 'customers-fraud-list', component: CustomersFraudListComponent, canActivate: [AuthGuard] },
-
-          { path: 'orders', component: OrdersComponent, canActivate: [AuthGuard] },
+          { path: 'homebrews', component: HomebrewsComponent, canActivate: [AuthGuard] }
         ]
       },
       {
         path: '', component: PopupLayoutComponent,
         children: [
-          { path: 'customers-blacklist-orderdetails/:id', component: CustomersBlackListOrderDetailComponent, canActivate: [AuthGuard] }
+          { path: 'edit-homebrew/:id', component: EditHomebrewComponent, canActivate: [AuthGuard] }
         ]
       }      
     ])
@@ -85,7 +88,10 @@ import { OrdersComponent } from './pages/orders';
     provideHttpClient(
       withInterceptorsFromDi()
     ),
-    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
+    BsModalRef,
+    BsModalService,
+    ComponentLoaderFactory 
   ],
   bootstrap: [AppComponent]
 })

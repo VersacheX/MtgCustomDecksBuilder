@@ -2,11 +2,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using MtgCustomDecksBuilder.Server.Schema.WNSMaster;
 using System.Net;
 using System.Text;
 using MtgCustomDecksBuilder.Server.Schema.ApplicationDbContext;
 using MtgCustomDecksBuilder.Server.Services;
+using Persistence.Schema;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,8 +16,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: allowSpecificOrigins,
         policy =>
         {
-            policy.AllowAnyOrigin();
-            //policy.WithOrigins("https://localhost:4200");
+            //policy.AllowAnyOrigin();
+            policy.WithOrigins("https://localhost:4200");
             policy.AllowAnyHeader();
             policy.AllowAnyMethod();
         });
@@ -27,7 +27,6 @@ builder.Services.AddCors(options =>
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseInMemoryDatabase(connectionString));
-//builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
                 options.SignIn.RequireConfirmedAccount = true)
@@ -69,9 +68,10 @@ builder.Services.AddAuthentication(option =>
 
 
 //ADD CONTEXT CONNECTIONS
-builder.Services.AddDbContext<WNSMasterContext>(options =>
+//TO SCAFFOLD THIS DB USE: dotnet ef dbcontext scaffold "Data Source=DESKTOP-3K6IPDC;Initial Catalog=MtgCustomDecksBuilder;Integrated Security=True;Trust Server Certificate=True" Microsoft.EntityFrameworkCore.SqlServer -o Schema --force
+builder.Services.AddDbContext<MtgCustomDecksBuilderContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("WNS_master") ?? throw new InvalidOperationException("Connection string 'WNS_master' not found."));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("MtgCustomDecksBuilder") ?? throw new InvalidOperationException("Connection string 'WNS_master' not found."));
 #if DEBUG
     options.EnableSensitiveDataLogging(); // Enable sensitive data logging
     options.EnableDetailedErrors(); // Enable detailed error messages);
@@ -87,7 +87,6 @@ builder.Services.AddDistributedMemoryCache();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen();
 
 
 builder.Services.Configure<IdentityOptions>(options =>
@@ -125,25 +124,6 @@ var app = builder.Build();
 
 
 app.MapIdentityApi<MyUser>();
-
-////Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-//    //app.UseMigrationsEndPoint();
-//}
-//else
-//{
-//    app.UseExceptionHandler("/Home/Error");
-//    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-//    app.UseHsts();
-//}
-
-////Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-//    app.UseSwagger();
-//app.UseSwaggerUI();
-//}
 
 app.UseHttpsRedirection();
 

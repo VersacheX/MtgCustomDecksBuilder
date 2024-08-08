@@ -1,0 +1,120 @@
+<div class="fill-content">
+  <h1 id="tableLabel"><span *ngIf="BusinessObjectId > 0">New&nbsp;</span>Homebrew</h1>
+
+  <form>
+    <table class="table" style="max-width:650px;">
+      <tr>
+        <td>
+          <table class="table">
+            <tr>
+              <td>
+                <label for="setNameText" class="form-label">Set Name</label>
+                <input name="setNameText"
+                       type="text"
+                       id="setNameText"
+                       class="form-control"
+                       [(ngModel)]="searchCriteria.Name" />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label for="setTypeSelect" class="form-label">Set Type</label>
+                <select name="setTypeSelect" id="setTypeSelect" class="form-control" [(ngModel)]="searchCriteria.SetType">
+                  <option [ngValue]="undefined">Any</option>
+                  <option *ngFor="let setType of setTypes" [ngValue]="setType.name">{{setType.name}}</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="form-check">
+                  <input name="paperOnlyCheckbox"
+                         type="checkbox"
+                         id="paperOnlyCheckbox"
+                         class="form-check-input"
+                         [(ngModel)]="searchCriteria.PaperOnly">
+                  <label class="form-check-label" for="paperOnlyCheckbox">Online Only</label>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+        <td style="vertical-align: top;">
+          <label for="dateRangeFrom" class="form-label">Date Range</label>
+
+          <input name="dateRangeFrom"
+                 type="text"
+                 id="dateRangeFrom"
+                 class="form-control"
+                 placeholder="Date From"
+                 [(ngModel)]="searchCriteria.FromDate"
+                 bsDatepicker />
+
+          <input name="dateRangeTo"
+                 type="text"
+                 class="form-control"
+                 placeholder="Date To"
+                 [(ngModel)]="searchCriteria.ToDate"
+                 bsDatepicker />
+        </td>
+        <td style="vertical-align: top;">
+          <label for="fromSetSelect" class="form-label">Set Range</label>
+          <select name="fromSetSelect" id="fromSetSelect" class="form-control" (change)="SetsFromChanged()" [(ngModel)]="searchCriteria.SetFromDate">
+            <option [ngValue]="undefined">Any</option>
+            <option *ngFor="let set of fromSetData" [ngValue]="set.releaseDate">{{set.name}} - {{set.releaseDate|date:'yyyy-MM-dd'}}</option>
+          </select>
+          <select name="toSetSelect" id="toSetSelect" class="form-control" (change)="SetsToChanged()" [(ngModel)]="searchCriteria.SetToDate">
+            <option [ngValue]="undefined">Any</option>
+            <option *ngFor="let set of toSetData" [ngValue]="set.releaseDate">{{set.name}} - {{set.releaseDate|date:'yyyy-MM-dd'}}</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td align="right">
+          <button type="button" class="btn btn-outline-secondary" (click)="LoadDataGridsData()">Search</button>
+        </td>
+      </tr>
+    </table>
+  </form>
+
+  <p *ngIf="!mtgSetsSearchResults"><em>Loading...</em></p>
+  <table datatable *ngIf="mtgSetsSearchResults" width="100%">
+    <thead>
+      <tr>
+        <th width="25%">Name</th>
+        <th width="25%">Expansion</th>
+        <th width="25%">Code</th>
+        <th width="25%">Block</th>
+        <th width="25%">Type</th>
+        <th width="25%">Online Only</th>
+        <th width="25%">ReleaseDate</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let set of mtgSetsSearchResults">
+        <td width="25%">
+          {{set.name}}
+        </td>
+        <td width="25%">
+          {{set.expansion}}
+        </td>
+        <td width="25%">
+          {{set.code}}
+        </td>
+        <td width="25%">
+          {{set.block}}
+        </td>
+        <td width="25%">
+          {{set.type}}
+        </td>
+        <td width="25%">
+          {{set.onlineOnly}}
+        </td>
+        <td width="25%">
+          {{set.releaseDate|date:'yyyy-MM-dd'}}
+        </td>
+      </tr>
+    </tbody>
+
+  </table>
+</div>

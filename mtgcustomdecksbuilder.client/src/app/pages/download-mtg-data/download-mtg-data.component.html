@@ -1,0 +1,14 @@
+<h1 id="tableLabel">Mtg Api Data Sync</h1>
+
+<p>Download mtg data for local storage.</p>
+
+<div class="row">
+  <div class="col-md-3">
+    <button (click)="DownloadMtgSets()">Download Sets</button>
+    <label *ngIf="setDownloadCount">{{setDownloadCount}} downloaded</label>
+  </div>
+  <div class="col-md-3">
+    <button (click)="DownloadMtgCards()">Download Cards</button>
+    <label *ngIf="cardDownloadCount">{{cardDownloadCount}} downloaded</label>
+  </div>
+</div>

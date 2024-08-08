@@ -1,5 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
 @import url("../node_modules/bootstrap/dist/css/bootstrap.min.css");
+@import url("./app/_controls/modal/modal-animations.css");
 
 .link-primary {
   cursor: pointer;
@@ -41,4 +42,21 @@ a:hover {
   margin-left: 2px;
   padding-left: 2px;
   text-align: right;
+}
+
+.full-size-modal {
+  max-width: 90% !important;
+  width: 90% !important;
+  max-height: 90vh !important;
+  height: 90vh !important;
+  overflow: hidden;
+}
+
+.fill-content {
+  height: 100%;
+}
+
+.full-size-modal .modal-content {
+  height: 100%;
+  overflow-y: auto; /* Add vertical scrollbar if needed */
 }

@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using MtgCustomDecksBuilder.Server.Schema.WNSMaster;
 using System;
 
 namespace MtgCustomDecksBuilder.Server.Schema.ApplicationDbContext.Migrations
