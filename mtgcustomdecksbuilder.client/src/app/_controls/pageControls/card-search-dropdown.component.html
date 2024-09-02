@@ -1,0 +1,14 @@
+<div class="form-field-container">
+  <mat-form-field class="mat-form-field-with-list">
+    <mat-label>Search Cards</mat-label>
+    <input matInput [formControl]="searchControl" (input)="onSearch($event)" placeholder="Type to search" autocomplete="off">
+  </mat-form-field>
+
+  <div class="card-list-container" *ngIf="cards.length > 0">
+    <ul #cardList class="card-list">
+      <li *ngFor="let card of cards" (click)="onCardSelected(card)">
+        {{ card.Name }}
+      </li>
+    </ul>
+  </div>
+</div>

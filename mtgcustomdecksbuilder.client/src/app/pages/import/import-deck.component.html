@@ -1,0 +1,40 @@
+<h1 id="tableLabel">Mtg Cards</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+<table class="table" style="max-width:650px;">
+  <tr>
+    <td style="vertical-align: top;">
+      <label for="deckListTextArea" class="form-label">Deck List</label>
+      <textarea id="deckListTextArea" class="form-control" [(ngModel)]="deckImportData.DeckList" style="width: 100%; max-height:250px; height:250px;">
+      </textarea>
+    </td>
+  </tr>
+  <tr>
+    <td align="right">
+      <button type="button" class="btn btn-outline-secondary" (click)="ImportDeck()">Import</button>
+    </td>
+  </tr>
+</table>
+
+
+<p *ngIf="!mtgCards"><em>Loading...</em></p>
+<table datatable *ngIf="mtgCards" width="100%">
+  <thead>
+    <tr>
+      <th width="25%">Name</th>
+      <th width="25%">Image</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let card of mtgCards">
+      <td width="25%">
+        {{card.name}}<br /><br /><i>{{card.flavor}}</i>
+      </td>
+      <td>
+        <img [(src)]="card.imageUrl" style="max-height:250px;" />
+      </td>
+    </tr>
+  </tbody>
+
+</table>

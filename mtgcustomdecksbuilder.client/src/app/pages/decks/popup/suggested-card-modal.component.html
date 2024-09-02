@@ -1,0 +1,14 @@
+<h2 mat-dialog-title>Suggested Cards</h2>
+<mat-dialog-content class="modal-content">
+  <div class="card-container">
+    <img *ngFor="let card of data.cards"
+         [src]="card.ImageUrl"
+         [alt]="card.Name"
+         class="card-image"
+         cardImageHoverPopup [attr.data-card]="card | json"
+         (click)="selectCard(card)" />
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button mat-dialog-close>Close</button>
+</mat-dialog-actions>

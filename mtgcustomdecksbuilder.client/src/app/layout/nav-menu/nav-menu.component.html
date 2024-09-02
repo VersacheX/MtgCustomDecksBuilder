@@ -66,6 +66,28 @@
             <span class="col-auto">Brew</span>
           </a>
         </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/import-deck']">
+            <i class="fa fa-download"></i>
+            <span class="col-auto">Import</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- Decks -->
+    <li>
+      <a class="nav-link" style="cursor: pointer;" (click)="ToggleSubMenuItem('decksSubmenu')">
+        <i class="fa fa-align-justify"></i>
+        <span class="col-auto">Decks</span>
+      </a>
+      <ul class="collapse list-unstyled" id="decksSubmenu">
+        <li>
+          <a class="nav-link" [routerLink]="['/deck-builder']">
+            <i class="fa fa-align-justify"></i>
+            <span class="col-auto">My Decks</span>
+          </a>
+        </li>
       </ul>
     </li>
   </ul>

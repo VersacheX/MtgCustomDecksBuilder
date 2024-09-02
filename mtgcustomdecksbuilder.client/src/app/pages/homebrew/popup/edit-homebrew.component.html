@@ -1,120 +1,177 @@
 <div class="fill-content">
-  <h1 id="tableLabel"><span *ngIf="BusinessObjectId > 0">New&nbsp;</span>Homebrew</h1>
+  <div class="modal-header">
+    <h4 class="modal-title pull-left"><span *ngIf="!(BusinessObjectId > 0)">New&nbsp;</span>Homebrew</h4>
+    <!--<button type="button" class="btn-close close pull-right" aria-label="Close">
+      <span aria-hidden="true" class="visually-hidden">&times;</span>
+    </button>-->
+  </div>
+  <div class="modal-body">
+    <form>
+      <table class="table" style="max-width:650px;">
+        <tr>
+          <td>
+            <table class="table">
+              <tr>
+                <td>
+                  <label for="nameText" class="form-label">Homebrew Name</label>
+                  <input name="nameText"
+                         type="text"
+                         id="nameText"
+                         class="form-control"
+                         [(ngModel)]="searchCriteria.Name" />
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="setNameText" class="form-label">Set Name</label>
+                  <input name="setNameText"
+                         type="text"
+                         id="setNameText"
+                         class="form-control"
+                         [(ngModel)]="searchCriteria.SetName" />
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="setTypeSelect" class="form-label">Set Type</label>
+                  <select name="setTypeSelect" id="setTypeSelect" class="form-control" [(ngModel)]="searchCriteria.SetType">
+                    <option [ngValue]="undefined">Any</option>
+                    <option *ngFor="let setType of setTypes" [ngValue]="setType.name">{{setType.name}}</option>
+                  </select>
+                </td>
+              </tr>
+            </table>
+          </td>
+          <td style="vertical-align: top;">
+            <label for="dateRangeFrom" class="form-label">Date Range</label>
 
-  <form>
-    <table class="table" style="max-width:650px;">
-      <tr>
-        <td>
-          <table class="table">
-            <tr>
-              <td>
-                <label for="setNameText" class="form-label">Set Name</label>
-                <input name="setNameText"
-                       type="text"
-                       id="setNameText"
-                       class="form-control"
-                       [(ngModel)]="searchCriteria.Name" />
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <label for="setTypeSelect" class="form-label">Set Type</label>
-                <select name="setTypeSelect" id="setTypeSelect" class="form-control" [(ngModel)]="searchCriteria.SetType">
-                  <option [ngValue]="undefined">Any</option>
-                  <option *ngFor="let setType of setTypes" [ngValue]="setType.name">{{setType.name}}</option>
-                </select>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <div class="form-check">
-                  <input name="paperOnlyCheckbox"
-                         type="checkbox"
-                         id="paperOnlyCheckbox"
-                         class="form-check-input"
-                         [(ngModel)]="searchCriteria.PaperOnly">
-                  <label class="form-check-label" for="paperOnlyCheckbox">Online Only</label>
-                </div>
-              </td>
-            </tr>
-          </table>
-        </td>
-        <td style="vertical-align: top;">
-          <label for="dateRangeFrom" class="form-label">Date Range</label>
+            <input name="dateRangeFrom"
+                   type="text"
+                   id="dateRangeFrom"
+                   class="form-control"
+                   placeholder="Date From"
+                   [(ngModel)]="searchCriteria.FromDate"
+                   bsDatepicker />
 
-          <input name="dateRangeFrom"
-                 type="text"
-                 id="dateRangeFrom"
-                 class="form-control"
-                 placeholder="Date From"
-                 [(ngModel)]="searchCriteria.FromDate"
-                 bsDatepicker />
+            <input name="dateRangeTo"
+                   type="text"
+                   class="form-control"
+                   placeholder="Date To"
+                   [(ngModel)]="searchCriteria.ToDate"
+                   bsDatepicker />
 
-          <input name="dateRangeTo"
-                 type="text"
-                 class="form-control"
-                 placeholder="Date To"
-                 [(ngModel)]="searchCriteria.ToDate"
-                 bsDatepicker />
-        </td>
-        <td style="vertical-align: top;">
-          <label for="fromSetSelect" class="form-label">Set Range</label>
-          <select name="fromSetSelect" id="fromSetSelect" class="form-control" (change)="SetsFromChanged()" [(ngModel)]="searchCriteria.SetFromDate">
-            <option [ngValue]="undefined">Any</option>
-            <option *ngFor="let set of fromSetData" [ngValue]="set.releaseDate">{{set.name}} - {{set.releaseDate|date:'yyyy-MM-dd'}}</option>
-          </select>
-          <select name="toSetSelect" id="toSetSelect" class="form-control" (change)="SetsToChanged()" [(ngModel)]="searchCriteria.SetToDate">
-            <option [ngValue]="undefined">Any</option>
-            <option *ngFor="let set of toSetData" [ngValue]="set.releaseDate">{{set.name}} - {{set.releaseDate|date:'yyyy-MM-dd'}}</option>
-          </select>
-        </td>
-      </tr>
-      <tr>
-        <td align="right">
-          <button type="button" class="btn btn-outline-secondary" (click)="LoadDataGridsData()">Search</button>
-        </td>
-      </tr>
+            <label for="libraryCountText" class="form-label">Library Size</label>
+            <input name="libraryCountText"
+                   type="text"
+                   id="libraryCountText"
+                   class="form-control"
+                   [(ngModel)]="searchCriteria.LibraryCardCount" />
+          </td>
+          <td style="vertical-align: top;">
+            <label for="fromSetSelect" class="form-label">Set Range</label>
+            <select name="fromSetSelect" id="fromSetSelect" class="form-control" (change)="SetsFromChanged()" [(ngModel)]="searchCriteria.SetFromDate">
+              <option [ngValue]="undefined">Any</option>
+              <option *ngFor="let set of fromSetData" [ngValue]="set.releaseDate">{{set.name}} - {{set.releaseDate|date:'yyyy-MM-dd'}}</option>
+            </select>
+            <select name="toSetSelect" id="toSetSelect" class="form-control" (change)="SetsToChanged()" [(ngModel)]="searchCriteria.SetToDate">
+              <option [ngValue]="undefined">Any</option>
+              <option *ngFor="let set of toSetData" [ngValue]="set.releaseDate">{{set.name}} - {{set.releaseDate|date:'yyyy-MM-dd'}}</option>
+            </select>
+            <label for="sideboardCountText" class="form-label">Sideboard Size</label>
+            <input name="sideboardCountText"
+                    type="text"
+                    id="sideboardCountText"
+                    class="form-control"
+                    [(ngModel)]="searchCriteria.SideboardCount" />
+          </td>
+          <td valign="top">
+            <label for="legalitySelect" class="form-label">Legality</label>
+            <select name="legalitySelect" id="legalitySelect" class="form-control" [(ngModel)]="searchCriteria.Legality" (change)="legalitySelect_Changed()">
+              <option [ngValue]="undefined">Any</option>
+              <option *ngFor="let gameType of gameFormats" [ngValue]="gameType.name">{{gameType.name}}</option>
+            </select>
+
+
+            <div class="checkbox-container">
+              <label class="form-check-label" for="commanderCheckbox">Commander</label>
+              <input name="commanderCheckbox"
+                     type="checkbox"
+                     id="commanderCheckbox"
+                     class="form-check-input"
+                     [(ngModel)]="searchCriteria.CommanderAllowed">
+            </div>
+
+            <div class="checkbox-container">
+              <label class="form-check-label" for="companionCheckbox">Companion</label>
+              <input name="companionCheckbox"
+                     type="checkbox"
+                     id="companionCheckbox"
+                     class="form-check-input"
+                     [(ngModel)]="searchCriteria.CompanionAllowed">
+            </div>
+
+            <div class="checkbox-container">
+              <label class="form-check-label" for="paperOnlyCheckbox">Paper Only</label>
+              <input name="paperOnlyCheckbox"
+                     type="checkbox"
+                     id="paperOnlyCheckbox"
+                     class="form-check-input"
+                     [(ngModel)]="searchCriteria.PaperOnly">
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td align="right">
+            <button type="button" class="btn btn-outline-primary" (click)="Save()">Save</button>
+            <button type="button" class="btn btn-outline-secondary" (click)="LoadDataGridsData()">Search</button>
+          </td>
+        </tr>
+      </table>
+    </form>
+
+    <p *ngIf="!mtgSetsSearchResults"><em>No Results...</em></p>
+    <table datatable *ngIf="mtgSetsSearchResults" width="100%">
+      <thead>
+        <tr>
+          <th width="25%">Name</th>
+          <th width="25%">Expansion</th>
+          <th width="25%">Code</th>
+          <th width="25%">Block</th>
+          <th width="25%">Type</th>
+          <th width="25%">Online Only</th>
+          <th width="25%">ReleaseDate</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let set of mtgSetsSearchResults">
+          <td width="25%">
+            {{set.name}}
+          </td>
+          <td width="25%">
+            {{set.expansion}}
+          </td>
+          <td width="25%">
+            {{set.code}}
+          </td>
+          <td width="25%">
+            {{set.block}}
+          </td>
+          <td width="25%">
+            {{set.type}}
+          </td>
+          <td width="25%">
+            {{set.onlineOnly}}
+          </td>
+          <td width="25%">
+            {{set.releaseDate|date:'yyyy-MM-dd'}}
+          </td>
+        </tr>
+      </tbody>
+
     </table>
-  </form>
+  </div>
+  <!--<div class="modal-footer">
+    <button type="button" class="btn btn-default" (click)="bsModalRef.hide()">{{ closeBtnName }}</button>
+  </div>-->
 
-  <p *ngIf="!mtgSetsSearchResults"><em>Loading...</em></p>
-  <table datatable *ngIf="mtgSetsSearchResults" width="100%">
-    <thead>
-      <tr>
-        <th width="25%">Name</th>
-        <th width="25%">Expansion</th>
-        <th width="25%">Code</th>
-        <th width="25%">Block</th>
-        <th width="25%">Type</th>
-        <th width="25%">Online Only</th>
-        <th width="25%">ReleaseDate</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let set of mtgSetsSearchResults">
-        <td width="25%">
-          {{set.name}}
-        </td>
-        <td width="25%">
-          {{set.expansion}}
-        </td>
-        <td width="25%">
-          {{set.code}}
-        </td>
-        <td width="25%">
-          {{set.block}}
-        </td>
-        <td width="25%">
-          {{set.type}}
-        </td>
-        <td width="25%">
-          {{set.onlineOnly}}
-        </td>
-        <td width="25%">
-          {{set.releaseDate|date:'yyyy-MM-dd'}}
-        </td>
-      </tr>
-    </tbody>
-
-  </table>
 </div>

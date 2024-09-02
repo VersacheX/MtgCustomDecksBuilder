@@ -1,16 +1,9 @@
+using BObj.Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using MtgCustomDecksBuilder.Server.Tools;
-using System.Data;
-using System.Data.Common;
-using System.Net.Http.Headers;
-using MtgApiManager.Lib.Service;
-using MtgApiManager.Lib.Core;
-using MtgApiManager.Lib.Model;
 using Persistence.Schema;
+using System.Data;
 
 namespace MtgCustomDecksBuilder.Server.Controllers
 {
@@ -39,6 +32,7 @@ namespace MtgCustomDecksBuilder.Server.Controllers
                 && (!string.IsNullOrWhiteSpace(criteria.SetType) ? x.MtgCardSets.Any(y=>y.MtgSetFkNavigation.Type == criteria.SetType && y.MtgSetFkNavigation.Code == x.Set) : true )
                 && (criteria.SetFromDate != null ? x.MtgCardSets.Any(y => y.MtgSetFkNavigation.ReleaseDate >= criteria.SetFromDate && y.MtgSetFkNavigation.Code == x.Set) : true)
                 && (criteria.SetToDate != null ? x.MtgCardSets.Any(y=> y.MtgSetFkNavigation.ReleaseDate <= criteria.SetToDate && y.MtgSetFkNavigation.Code == x.Set) : true)
+                && (criteria.Legality != null ? x.MtgCardLegalities.Any(y => y.Format == criteria.Legality && (y.Legality == "Legal" || y.Legality == "Restricted")) : true)
                 )
                 .GroupBy(x => x.Name)
                 .Select(x=>x.FirstOrDefault())
@@ -48,8 +42,48 @@ namespace MtgCustomDecksBuilder.Server.Controllers
 
             return Ok(resultCards);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> GetDropdownSuggestions(MtgCardDropDownSearchCriteria criteria)
+        {
+            var query = _masterContext.MtgCards.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(criteria.Query))
+            {
+                query = query.Where(card => card.Name.Contains(criteria.Query));
+            }
+
+            var resultCards = await query.ToListAsync();
+
+            if (!string.IsNullOrWhiteSpace(criteria.ColorIdentity))
+            {
+                string[] legalIdentities = criteria.ColorIdentity.Split(',');
+
+                resultCards = resultCards.Where(card =>
+                    card.ColorIdentity.Split(',')
+                    .All(identity => legalIdentities.Contains(identity))
+                ).ToList();
+            }
+
+            resultCards = resultCards
+                .GroupBy(card => card.Name)
+                .Select(group => group.First())
+                .Distinct()
+                .Take(5000)
+                .ToList();
+
+            var resultDtos = resultCards.Select(MtgCardDto.FromEntity).ToList();
+
+            return Ok(resultDtos);
+        }
     }
 
+    public class MtgCardDropDownSearchCriteria
+    {
+        public HomebrewDto? Homebrew { get; set; }
+        public string? ColorIdentity { get; set; }
+        public string? Query { get; set; }
+    }
     public class MtgCardSearchCriteria
     {
         public string? CmcTo { get; set; }
@@ -59,6 +93,7 @@ namespace MtgCustomDecksBuilder.Server.Controllers
 
         public DateTime? SetFromDate { get; set; }
         public DateTime? SetToDate { get; set; }
+        public string? Legality { get; set; }
     }
 
 }

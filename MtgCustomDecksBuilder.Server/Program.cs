@@ -7,6 +7,9 @@ using System.Text;
 using MtgCustomDecksBuilder.Server.Schema.ApplicationDbContext;
 using MtgCustomDecksBuilder.Server.Services;
 using Persistence.Schema;
+using System.Text.Json.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -84,7 +87,18 @@ builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddSingleton<MtgApiManager.Lib.Service.IMtgServiceProvider, MtgApiManager.Lib.Service.MtgServiceProvider>();
 builder.Services.AddDistributedMemoryCache();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    options.JsonSerializerOptions.PropertyNamingPolicy = null;
+}).AddNewtonsoftJson(options =>
+{
+    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+    options.SerializerSettings.ContractResolver = new DefaultContractResolver
+    {
+        NamingStrategy = new DefaultNamingStrategy() // Ensures Pascal case
+    };
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 

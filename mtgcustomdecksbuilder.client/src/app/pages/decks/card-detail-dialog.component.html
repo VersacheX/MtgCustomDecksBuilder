@@ -1,0 +1,144 @@
+<div class="dialog-container">
+  <div class="header-section">
+    <h2 class="card-name">{{data.Name}}</h2>
+    <p class="card-flavor">{{data.Flavor}}</p>
+  </div>
+  <div class="content-section">
+    <div class="details-section">
+
+
+      <div class="scrollable-content" style="max-height: 450px;">
+        <div class="detail-item">
+          <strong>Artist:</strong> <span>{{data.Artist}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Border:</strong> <span>{{data.Border}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>CMC:</strong> <span>{{data.Cmc}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Color Identity:</strong> <span>{{data.ColorIdentity}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Colors:</strong> <span>{{data.Colors}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Hand:</strong> <span>{{data.Hand}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>ID:</strong> <span>{{data.Id}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Is Multi-Color:</strong> <span>{{data.IsMultiColor}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Is Colorless:</strong> <span>{{data.IsColorless}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Layout:</strong> <span>{{data.Layout}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Life:</strong> <span>{{data.Life}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Loyalty:</strong> <span>{{data.Loyalty}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Mana Cost:</strong> <span>{{data.ManaCost}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Multiverse ID:</strong> <span>{{data.MultiverseId}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Names:</strong> <span>{{data.Names}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Number:</strong> <span>{{data.Number}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Original Text:</strong> <span>{{data.OriginalText}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Original Type:</strong> <span>{{data.OriginalType}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Power:</strong> <span>{{data.Power}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Printings:</strong> <span>{{data.Printings}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Rarity:</strong> <span>{{data.Rarity}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Release Date:</strong> <span>{{data.ReleaseDate}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Reserved:</strong> <span>{{data.Reserved}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Set:</strong> <span>{{data.Set}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Set Name:</strong> <span>{{data.SetName}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Source:</strong> <span>{{data.Source}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Starter:</strong> <span>{{data.Starter}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>SubTypes:</strong> <span>{{data.SubTypes}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>SuperTypes:</strong> <span>{{data.SuperTypes}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Text:</strong> <span>{{data.Text}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Timeshifted:</strong> <span>{{data.Timeshifted}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Toughness:</strong> <span>{{data.Toughness}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Type:</strong> <span>{{data.Type}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Types:</strong> <span>{{data.Types}}</span>
+        </div>
+        <div class="detail-item">
+          <strong>Watermark:</strong> <span>{{data.Watermark}}</span>
+        </div>
+      </div>
+
+    </div>
+    <div class="image-section">
+      <img [src]="data.ImageUrl" alt="Card Image" class="card-image">
+    </div>
+  </div>
+  <div class="footer-section">
+    <div class="list-section">
+      <h3>Legalities</h3>
+      <ul>
+        <li *ngFor="let legality of data.MtgCardLegalities">
+          {{legality.Format}}: {{legality.Legality}}
+        </li>
+      </ul>
+    </div>
+    <div class="list-section">
+      <h3>Sets</h3>
+      <ul>
+        <li *ngFor="let set of data.MtgCardSets">
+          {{set.SetName}} ({{set.SetType}})
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div mat-dialog-actions>
+    <button mat-button (click)="onNoClick()">Close</button>
+  </div>
+</div>

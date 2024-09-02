@@ -1,6 +1,5 @@
 import { Component, OnInit, Type } from '@angular/core';
 import { AuthenticationService } from './_services';
-import { ModalService } from './_controls';
 
 @Component({
   selector: 'app-root',
@@ -8,17 +7,8 @@ import { ModalService } from './_controls';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  constructor(protected _authenticationService: AuthenticationService,
-    private modalService: ModalService) { }
+  constructor(protected _authenticationService: AuthenticationService) { }
 
   ngOnInit() {
-  }
-
-  openPopup(type: Type<unknown>) {
-    this.modalService.open(type, null);
-  }
-
-  close() {
-    this.modalService.close();
   }
 }

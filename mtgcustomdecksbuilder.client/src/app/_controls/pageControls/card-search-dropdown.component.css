@@ -1,0 +1,36 @@
+.form-field-container {
+  position: relative;
+  max-width: 250px;
+}
+
+.mat-form-field-with-list {
+  width: 100%;
+}
+
+.card-list-container {
+  position: absolute;
+  top: 70%;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background-color: white;
+  border: 1px solid #ccc;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.card-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+  .card-list li {
+    padding: 8px;
+    cursor: pointer;
+  }
+
+    .card-list li:hover {
+      background-color: #f0f0f0;
+    }

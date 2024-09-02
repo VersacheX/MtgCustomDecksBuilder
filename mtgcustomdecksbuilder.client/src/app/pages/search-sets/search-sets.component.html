@@ -12,7 +12,7 @@
             <input type="text"
                    id="setNameText"
                    class="form-control"
-                   [(ngModel)]="searchCriteria.Name" />
+                   [(ngModel)]="searchCriteria.SetName" />
           </td>
         </tr>
         <tr>
@@ -88,25 +88,25 @@
   <tbody>
     <tr *ngFor="let set of mtgSetsSearchResults">
       <td width="25%">
-        {{set.name}}
+        {{set.Name}}
       </td>
       <td width="25%">
-        {{set.expansion}}
+        {{set.Expansion}}
       </td>
       <td width="25%">
-        {{set.code}}
+        {{set.Code}}
       </td>
       <td width="25%">
-        {{set.block}}
+        {{set.Block}}
       </td>
       <td width="25%">
-        {{set.type}}
+        {{set.Type}}
       </td>
       <td width="25%">
-        {{set.onlineOnly}}
+        {{set.OnlineOnly}}
       </td>
       <td width="25%">
-        {{set.releaseDate|date:'yyyy-MM-dd'}}
+        {{set.ReleaseDate|date:'yyyy-MM-dd'}}
       </td>
     </tr>
   </tbody>

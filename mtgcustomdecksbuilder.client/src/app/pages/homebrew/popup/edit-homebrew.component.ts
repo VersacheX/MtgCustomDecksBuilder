@@ -16,6 +16,7 @@ export class EditHomebrewComponent extends MasterDetailComponent implements OnIn
   public fromSetData: any[];
   public toSetData: any[];
   public setTypes: any[];
+  public gameFormats: any[]; 
 
   constructor(private http: HttpClient, @Inject('BASE_URL') private baseUrl: string, public Route: ActivatedRoute) {
     super(Route);
@@ -34,8 +35,22 @@ export class EditHomebrewComponent extends MasterDetailComponent implements OnIn
   }
 
   override LoadControlsData() {
+    this.GetFormats();
     this.GetSetData();
     this.GetSetTypeData();
+  }
+
+  GetFormats() {
+    this.http.get<any[]>(this.baseUrl + 'gameformat/GetAllGameFormats').subscribe(result => {
+      this.gameFormats = result;
+      //.sort((a: any, b: any) => {
+      //  return new Date(a.name) > new Date(b.name) ? 1 : -1;
+      //});
+
+      //if (this.mtgSets && this.mtgSets.length > 0)
+      //  console.log(this.mtgSets[0]);
+
+    }, error => console.error(error));
   }
 
   GetSetTypeData() {
@@ -90,5 +105,28 @@ export class EditHomebrewComponent extends MasterDetailComponent implements OnIn
       this.fromSetData = this.mtgSets.filter(set => new Date(set.releaseDate) <= new Date(this.searchCriteria.SetToDate));
     else
       this.toSetData = this.mtgSets;
+  }
+
+  override SaveData() {
+    this.http.post<any[]>(this.baseUrl + 'homebrew/Save', this.searchCriteria).subscribe(result => {
+      //this.setTypes = result.sort((a: any, b: any) => {
+      //  return new Date(a.name) > new Date(b.name) ? 1 : -1;
+      //});
+
+      //if (this.mtgSets && this.mtgSets.length > 0)
+      //  console.log(this.mtgSets[0]);
+
+    }, error => console.error(error));
+  }
+
+  legalitySelect_Changed() {
+    //Get Gametype From gameTypes Gametype.name
+    if (this.searchCriteria.Legality) {
+      var gameType = this.gameFormats.filter(x => x.name == this.searchCriteria.Legality)[0];
+      this.searchCriteria.LibraryCardCount = gameType.maxCardCount;
+      this.searchCriteria.CommanderAllowed = gameType.commanderLegal;
+      this.searchCriteria.CompanionAllowed = gameType.companionLegal;
+      this.searchCriteria.SideboardCount = gameType.sideboardSize;
+    }
   }
 }

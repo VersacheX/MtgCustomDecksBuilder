@@ -35,7 +35,7 @@ namespace MtgCustomDecksBuilder.Server.Controllers
 
             resultSet = _masterContext.MtgSets.Where(x =>
 
-                (!string.IsNullOrWhiteSpace(criteria.Name) ? x.Name.Contains(criteria.Name) : true)
+                (!string.IsNullOrWhiteSpace(criteria.SetName) ? x.Name.Contains(criteria.SetName) : true)
                 && (criteria.FromDate != null ? x.ReleaseDate >= criteria.FromDate : true)
                 && (criteria.ToDate != null ? x.ReleaseDate <= criteria.ToDate : true)
                 && (criteria.PaperOnly == true ? x.OnlineOnly == false : true)
@@ -58,6 +58,7 @@ namespace MtgCustomDecksBuilder.Server.Controllers
     {
         public string? CmcTo { get; set; }
         public string? Name { get; set; }
+        public string? SetName { get; set; }
         public string? SetCode { get; set; }
         public DateTime? FromDate { get; set; }
         public DateTime? ToDate { get; set; }

@@ -1,6 +1,5 @@
 /* You can add global styles to this file, and also import other style files */
 @import url("../node_modules/bootstrap/dist/css/bootstrap.min.css");
-@import url("./app/_controls/modal/modal-animations.css");
 
 .link-primary {
   cursor: pointer;
@@ -60,3 +59,17 @@ a:hover {
   height: 100%;
   overflow-y: auto; /* Add vertical scrollbar if needed */
 }
+
+.checkbox-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+  .checkbox-container label {
+    margin-right: 10px; /* Adjust as needed */
+  }
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+

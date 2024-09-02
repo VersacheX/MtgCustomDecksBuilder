@@ -1,0 +1,15 @@
+/* Remove horizontal lines between rows */
+.mat-table tr.mat-row, .mat-table tr.mat-header-row {
+  border-bottom: none;
+}
+
+/* Reduce row height */
+.mat-table .mat-cell, .mat-table .mat-header-cell {
+  height: calc(1em + 8px); /* 1em is the font size, and 8px is the additional height */
+  line-height: 1em; /* Ensure text is vertically centered */
+  padding: 0; /* Remove default padding */
+}
+
+.illegal-card {
+  color: red;
+}

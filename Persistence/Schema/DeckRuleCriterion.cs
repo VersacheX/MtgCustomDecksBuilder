@@ -17,6 +17,10 @@ namespace Persistence.Schema
         public int? MtgFormatFk { get; set; }
         public int? GameFormatFk { get; set; }
         public int? UserFk { get; set; }
+        public int? LibraryCardCount { get; set; }
+        public int? SideboardCount { get; set; }
+        public bool? CommanderAllowed { get; set; }
+        public bool? CompanionAllowed { get; set; }
 
         public virtual GameFormat? GameFormatFkNavigation { get; set; }
         public virtual MtgFormat? MtgFormatFkNavigation { get; set; }

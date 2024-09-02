@@ -26,13 +26,13 @@ export class AuthenticationService {
   public get IsLoggedIn(): boolean {
     const currentUser = JSON.parse(JSON.stringify(this.UserValue));
 
-    return currentUser != null && currentUser.authData?.length > 0;
+    return currentUser != null && currentUser.AuthData?.length > 0;
   }
 
   public get CurrentUserId(): number {
     const currentUser = JSON.parse(JSON.stringify(this.UserValue));
 
-    return currentUser != null ? currentUser.id : 0;
+    return currentUser != null ? currentUser.Id : 0;
   }
 
 

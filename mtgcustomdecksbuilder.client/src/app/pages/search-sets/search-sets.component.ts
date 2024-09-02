@@ -26,7 +26,7 @@ export class SetSearchComponent extends ListComponent implements OnInit {
 
     this.http.post<any[]>(this.baseUrl + 'mtgset/GetMtgSetsByCriteria', this.searchCriteria).subscribe(result => {
       this.mtgSetsSearchResults = result;
-      console.log(this.mtgSets[0]);
+      console.log(this.mtgSetsSearchResults[0]);
 
     }, error => console.error(error));
   }
@@ -41,7 +41,7 @@ export class SetSearchComponent extends ListComponent implements OnInit {
       this.setTypes = result.sort((a: any, b: any) => {
         return new Date(a.name) > new Date(b.name) ? 1 : -1;
       });
-      console.log(this.mtgSets[0]);
+      console.log(this.setTypes[0]);
 
     }, error => console.error(error));
   }
