@@ -1,6 +1,7 @@
 ﻿using BObj.Dto;
 using HtmlAgilityPack;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Persistence.Schema;
 using System.Net;
 
@@ -8,7 +9,7 @@ namespace Bobj
 {
     public static class EdhrecApi
     {
-        public static async Task<EdhrecDto> SourceEdhRecData(EdhrecSearchCriteria criteria, MtgCustomDecksBuilderContext _masterContext)
+        public static async Task<EdhrecDto> SourceEdhRecData(EdhrecSearchCriteria criteria, IMemoryCache cache)
         {
             string commander2 = !string.IsNullOrWhiteSpace(criteria.CommanderName2) ? "-" + criteria.CommanderName2.ToLower().Replace(" ", "-").Replace(",", "") : "";
             string url = $"https://edhrec.com/commanders/{criteria.CommanderName.ToLower().Replace(" ", "-").Replace(",", "")}{commander2}";
@@ -33,7 +34,7 @@ namespace Bobj
                     var almostIncludedCardNames = dto.EdhrecCardGroupLists.SelectMany(group => group.Value).Distinct().ToList();
                     var cardsAlreadyInDeck = criteria.MtgCards?.Select(x => x.Name).ToArray() ?? Array.Empty<string>();
 
-                    return PopulateMtgCardLists(dto, _masterContext, criteria.Homebrew, almostIncludedCardNames, cardsAlreadyInDeck);
+                    return PopulateMtgCardLists(dto, cache, criteria.Homebrew, almostIncludedCardNames, cardsAlreadyInDeck);
 
                 }
                 catch (HttpRequestException e)
@@ -72,16 +73,26 @@ namespace Bobj
             }
         }
 
-        private static EdhrecDto PopulateMtgCardLists(EdhrecDto dto, MtgCustomDecksBuilderContext _masterContext, DeckRuleCriterion homebrew, List<string> almostIncludedCardNames, string[] cardsAlreadyInDeck)
+        private static EdhrecDto PopulateMtgCardLists(EdhrecDto dto, IMemoryCache cache, HomebrewDto homebrew, List<string> almostIncludedCardNames, string[] cardsAlreadyInDeck)
         {
             dto.MtgCardGroupLists = new Dictionary<string, List<MtgCard>>();
 
+            // Retrieve cached data
+            if (!cache.TryGetValue("MtgCardsCache", out List<MtgCard> cachedMtgCards))
+            {
+                throw new Exception("Cards not in cache!");
+            }
+
+            // Filter the cached data based on criteria
+            var query = cachedMtgCards.AsQueryable();
+
             foreach (var group in dto.EdhrecCardGroupLists)
             {
-                var mtgCardList = _masterContext.MtgCards
-                    .Include(card => card.MtgCardLegalities)
-                    .Include(card => card.MtgCardSets)
-                        .ThenInclude(cardSet => cardSet.MtgSetFkNavigation)
+                var mtgCardList = cachedMtgCards
+                    //_masterContext.MtgCards
+                    //.Include(card => card.MtgCardLegalities)
+                    //.Include(card => card.MtgCardSets)
+                    //    .ThenInclude(cardSet => cardSet.MtgSetFkNavigation)
                     .Where(card => group.Value.Contains(card.Name) && almostIncludedCardNames.Contains(card.Name))
                     .GroupBy(card => card.Name)
                     .Select(group => group.First())
@@ -105,6 +116,17 @@ namespace Bobj
 
             var homebrewDto = HomebrewDto.FromEntity(homebrew);
             return homebrewDto.IsCardLegal(MtgCardDto.FromEntity(card));
+        }
+
+        private static bool IsCardLegal(MtgCard card, HomebrewDto homebrew)
+        {
+            if (homebrew == null)
+            {
+                return true;
+            }
+
+            //var homebrewDto = HomebrewDto.FromEntity(homebrew);
+            return homebrew.IsCardLegal(MtgCardDto.FromEntity(card));
         }
 
         private static EdhrecDto InitializeEdhrecDto()
@@ -135,7 +157,7 @@ namespace Bobj
         {
             public string? CommanderName { get; set; }
             public string? CommanderName2 { get; set; }
-            public DeckRuleCriterion? Homebrew { get; set; }
+            public HomebrewDto? Homebrew { get; set; }
             public List<MtgCardDto>? MtgCards { get; set; }
         }
     }

@@ -1,10 +1,12 @@
 ﻿using Persistence.Schema;
+using System.Linq.Expressions;
 
 namespace BObj.Dto
 {
     public class HomebrewDto
     {
         public int Id { get; set; }
+        public string? Name { get; set; }
         public string? GameFormatName { get; set; }
         public List<AllowedSetDto>? AllowedSets { get; set; }
         public List<SetTypeDto>? SetTypes { get; set; }
@@ -15,6 +17,7 @@ namespace BObj.Dto
             return new HomebrewDto
             {
                 Id = entity.DeckRuleCriterionPk,
+                Name = entity.Name,
                 GameFormatName = entity.GameFormatFkNavigation.Name,
                 AllowedSets = entity.DeckRuleCriteriaAllowedSets.Select(allowedSet => new AllowedSetDto
                 {
@@ -59,6 +62,16 @@ namespace BObj.Dto
             }
 
             return true;
+        }
+
+        public Expression<Func<MtgCard, bool>> BuildCardLegalPredicate()
+        {
+            return card =>
+                (AllowedSets != null && AllowedSets.Any() && SetTypes != null && SetTypes.Any()) &&
+                card.MtgCardLegalities.Any(legality => legality.Format == GameFormatName && legality.Legality == "Legal") &&
+                card.MtgCardSets.Any(cardSet => AllowedSets.Any(allowedSet =>
+                    cardSet.MtgSetFkNavigation.Type == allowedSet.Type ||
+                    cardSet.MtgSetFk == allowedSet.Id));
         }
     }
 

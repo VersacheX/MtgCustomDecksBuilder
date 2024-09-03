@@ -1,10 +1,10 @@
-import { AfterViewInit, ChangeDetectorRef, Component, Inject, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, Inject, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { DetailComponent } from '../../_controls/detail-component.component';
 import { MatTable } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
+import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 import { CardDetailsDialog } from './card-detail-dialog.component';
@@ -15,15 +15,19 @@ import { SuggestedCardModalComponent } from './popup/suggested-card-modal.compon
   templateUrl: './deck-builder.component.html',
   styleUrls: ['./deck-builder.component.css']
 })
-export class DeckBuilderComponent extends DetailComponent implements OnInit {
+export class DeckBuilderComponent extends DetailComponent implements OnInit, AfterViewInit {
   public deckImportData: any = {};
   //public mtgCards = new MatTableDataSource<any>([]);
   public rawMtgCardData: any[];
+  public deckName: string = '';
   //public dataTable: any;
+  public showImportTable: boolean = false;
 
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatTable) table: MatTable<any>;
-  @ViewChild(MatSort) sort: MatSort;
+  @ViewChildren(MatSort) sorts: QueryList<MatSort>;
+  public dataSources: { [key: string]: MatTableDataSource<any> } = {};
+  public orderedGroups: Record<string, any[]>;
 
   public selectedHomebrew: any = null;
   public selectedCommander: any = null;
@@ -43,6 +47,18 @@ export class DeckBuilderComponent extends DetailComponent implements OnInit {
     super(Route);
   }
 
+  ngAfterViewInit() {
+    this.sorts.changes.subscribe(() => {
+      this.sorts.forEach((sort, index) => {
+        const type = this.typeOrder[index];
+        if (this.dataSources[type]) {
+          this.dataSources[type].sort = sort;
+          this.dataSources[type].sortData(this.dataSources[type].data, sort);
+        }
+      });
+    });
+  }
+
   override LoadControlsData() {
     //this.mtgCards.paginator = this.paginator;
     //this.mtgCards.sort = this.sort;
@@ -50,25 +66,20 @@ export class DeckBuilderComponent extends DetailComponent implements OnInit {
     this.http.get<any[]>(this.baseUrl + 'homebrew/GetAllHomebrews').subscribe(result => {
       this.homebrews = result;
 
-      if (this.homebrews && this.homebrews.length > 0)
-        console.log(this.homebrews[0]);
-
     }, error => console.error(error));
   }
 
-  public orderedGroups: Record<string, any[]>;
   ImportDeck() {
+    this.toggleImportTable();
+
     this.http.post<any[]>(this.baseUrl + 'decks/Import', this.deckImportData).subscribe(result => {
 
 
       this.rawMtgCardData = result;
       this.orderedGroups = this.groupAndOrderCardsByType(this.rawMtgCardData);
-      //this.mtgCards.data = result;// this.groupCardsByType(result);
-      //this.mtgCards.paginator = this.paginator;
-      //this.mtgCards.sort = this.sort;
+      this.updateDataSources();
 
-      if (this.rawMtgCardData && this.rawMtgCardData.length > 0)
-        console.log(this.rawMtgCardData[0]);
+
 
     }, error => {
       console.error('Error importing deck:', error);
@@ -128,20 +139,45 @@ export class DeckBuilderComponent extends DetailComponent implements OnInit {
   }
 
   IsCardLegal(card: any) {
-    if (this.selectedHomebrew != null) {
-      const allowedSets = this.selectedHomebrew.DeckRuleCriteriaAllowedSets;
-      const setTypes = this.selectedHomebrew.DeckRuleCriteriaSetTypes;
+    if (this.selectedCommander || this.selectedCommander2 || !card.ColorIdentity || card.ColorIdentity === '') {
+      let identity: string[] = [];
 
-      const isLegalInFormat = card.MtgCardLegalities.some(legality => legality.Format === this.selectedHomebrew.GameFormatFkNavigation.Name && legality.Legality === 'Legal');
+      if (this.selectedCommander) {
+        identity.push(...this.selectedCommander.ColorIdentity.split(','));
+      }
+
+      if (this.selectedCommander2) {
+        const commander2Identities = this.selectedCommander2.ColorIdentity.split(',');
+        commander2Identities.forEach(id => {
+          if (!identity.includes(id)) {
+            identity.push(id);
+          }
+        });
+      }
+
+      const cardIdentities = card.ColorIdentity.split(',');
+      if (cardIdentities.some(cardColor => !identity.includes(cardColor))) {
+        return false;
+      }
+    }
+
+
+    if (this.selectedHomebrew != null) {
+      const allowedSets = this.selectedHomebrew.AllowedSets;
+      const setTypes = this.selectedHomebrew.SetTypes;
+
+      const isLegalInFormat = card.MtgCardLegalities.some(legality => legality.Format === this.selectedHomebrew.GameFormatName && legality.Legality === 'Legal');
 
       // Condition 2: Set Type
-      const hasValidSetType = allowedSets.some(allowedSet => card.MtgCardSets.some(cardSet => cardSet.SetType === allowedSet.MtgSetFkNavigation.Type));
+      const hasValidSetType = allowedSets.some(allowedSet => card.MtgCardSets.some(cardSet => cardSet.SetType === allowedSet.Type));
 
       // Condition 3: Allowed Sets
-      const isInAllowedSet = allowedSets.some(allowedSet => card.MtgCardSets.some(cardSet => cardSet.MtgSetFk === allowedSet.MtgSetFk));
+      const isInAllowedSet = allowedSets.some(allowedSet => card.MtgCardSets.some(cardSet => cardSet.MtgSetFk === allowedSet.Id));
+
 
       // Combine conditions using bitwise AND
-      return isLegalInFormat && hasValidSetType && isInAllowedSet;
+      if (!(isLegalInFormat && hasValidSetType && isInAllowedSet))
+        return false;
     }
 
     return true;
@@ -154,6 +190,7 @@ export class DeckBuilderComponent extends DetailComponent implements OnInit {
       updatedData.splice(index, 1);
       this.rawMtgCardData = updatedData;
       this.orderedGroups = this.groupAndOrderCardsByType(this.rawMtgCardData);
+      this.updateDataSources();
       console.log('Updated mtgCards:', this.rawMtgCardData);
     } else {
       console.log('Card not found in mtgCards');
@@ -200,6 +237,20 @@ export class DeckBuilderComponent extends DetailComponent implements OnInit {
     updatedData.push(card);
     this.rawMtgCardData = updatedData;
     this.orderedGroups = this.groupAndOrderCardsByType(this.rawMtgCardData);
+    this.updateDataSources();
+  }
+
+  updateDataSources() {
+    for (let type in this.orderedGroups) {
+      this.dataSources[type] = new MatTableDataSource(this.orderedGroups[type]);
+      this.dataSources[type].sortingDataAccessor = (item, property) => {
+        switch (property) {
+          case 'name': return item.Name.toLowerCase();
+          case 'manaCost': return item.Cmc;
+          default: return item[property];
+        }
+      };
+    }
   }
 
   showEdhrecSuggestions() {
@@ -244,5 +295,9 @@ export class DeckBuilderComponent extends DetailComponent implements OnInit {
     const supertypes = card.SuperTypes.toLowerCase().split(',').map(supertype => supertype.trim());
 
     return supertypes.includes('legendary') && types.includes('creature');
+  }
+
+  toggleImportTable() {
+    this.showImportTable = !this.showImportTable;
   }
 }

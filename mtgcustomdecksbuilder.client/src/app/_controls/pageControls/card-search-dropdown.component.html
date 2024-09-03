@@ -6,7 +6,7 @@
 
   <div class="card-list-container" *ngIf="cards.length > 0">
     <ul #cardList class="card-list">
-      <li *ngFor="let card of cards" (click)="onCardSelected(card)">
+      <li *ngFor="let card of cards" (click)="onCardSelected(card)" cardImageHoverPopup [attr.data-card]="card | json">
         {{ card.Name }}
       </li>
     </ul>

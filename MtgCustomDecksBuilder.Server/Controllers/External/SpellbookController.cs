@@ -1,19 +1,14 @@
+using BObj.Dto;
+using BObj.External;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using MtgCustomDecksBuilder.Server.Tools;
-using System.Data;
-using System.Data.Common;
-using System.Net.Http.Headers;
-using MtgApiManager.Lib.Service;
-using MtgApiManager.Lib.Core;
-using MtgApiManager.Lib.Model;
+using Microsoft.Extensions.Caching.Memory;
 using Persistence.Schema;
-using BObj.Dto;
+using System.Data;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using BObj.External;
 
 namespace MtgCustomDecksBuilder.Server.Controllers
 {
@@ -23,10 +18,12 @@ namespace MtgCustomDecksBuilder.Server.Controllers
     public class SpellbookController : BaseController
     {
         private readonly MtgCustomDecksBuilderContext _masterContext;
+        private readonly IMemoryCache _cache;
 
-        public SpellbookController(MtgCustomDecksBuilderContext masterContext)
+        public SpellbookController(MtgCustomDecksBuilderContext masterContext, IMemoryCache cache)
         {
             _masterContext = masterContext;
+            _cache = cache;
         }
 
         [HttpPost]
@@ -80,14 +77,19 @@ namespace MtgCustomDecksBuilder.Server.Controllers
                         .Distinct()
                         .ToList();
 
-
+                    // Retrieve cached data
+                    if (!_cache.TryGetValue("MtgCardsCache", out List<MtgCard> cachedMtgCards))
+                    {
+                        return BadRequest("Cache not found");
+                    }
 
                     /////////////////////////////////////////////////////////////////////////////
                     // Step 2: Perform the complex filtering in-memory
-                    var distinctMtgCards = _masterContext.MtgCards
-                        .Include(card => card.MtgCardLegalities)
-                        .Include(card => card.MtgCardSets)
-                            .ThenInclude(cardSet => cardSet.MtgSetFkNavigation)
+                    var distinctMtgCards = cachedMtgCards
+                        //_masterContext.MtgCards
+                        //.Include(card => card.MtgCardLegalities)
+                        //.Include(card => card.MtgCardSets)
+                        //    .ThenInclude(cardSet => cardSet.MtgSetFkNavigation)
                         .Where(card => almostIncludedCardNames.Contains(card.Name))
                         .GroupBy(card => card.Name)
                         .Select(group => MtgCardDto.FromEntity(group.First()))
@@ -101,7 +103,7 @@ namespace MtgCustomDecksBuilder.Server.Controllers
 
                     if(criteria.Homebrew != null)
                         legalCards = legalCards
-                            .Where(card => HomebrewDto.FromEntity(criteria.Homebrew).IsCardLegal(card))
+                            .Where(criteria.Homebrew.IsCardLegal)
                             .ToList();
                 }
             }
@@ -129,7 +131,7 @@ namespace MtgCustomDecksBuilder.Server.Controllers
 
     public class SpellbookSearchCriteria
     {
-        public DeckRuleCriterion? Homebrew { get; set; }
+        public HomebrewDto? Homebrew { get; set; }
         public List<MtgCardDto>? MtgCards { get; set; }
     }
 

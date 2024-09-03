@@ -50,8 +50,8 @@ namespace God
             EdhrecDto dto = await EdhrecApi.SourceEdhRecData(new EdhrecApi.EdhrecSearchCriteria()
             {
                 CommanderName = "Nicol Bolas",
-                Homebrew = deckRuleCriterion
-            }, dbContext);
+                Homebrew = HomebrewDto.FromEntity(deckRuleCriterion)
+            }, null);
         }
 
         static async Task CrawlSpellbook()

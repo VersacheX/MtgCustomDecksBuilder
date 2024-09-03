@@ -20,6 +20,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatOptionModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSortModule } from '@angular/material/sort';
+import { MatMenuModule } from '@angular/material/menu';
 
 import { AuthGuard, JwtInterceptor } from './_helpers';
 
@@ -48,6 +50,8 @@ import { CardDetailsDialog } from './pages/decks/card-detail-dialog.component';
 import { SuggestedCardModalComponent } from './pages/decks/popup/suggested-card-modal.component';
 import { CardImageHoverPopupDirective } from './_directives/CardImageHoverPopupDirective';
 import { CardSearchDropdownComponent } from './_controls/pageControls/card-search-dropdown.component';
+import { ManaFontPipe } from './_pipes/mana-font.pipe';
+
 
 
 
@@ -62,6 +66,7 @@ import { CardSearchDropdownComponent } from './_controls/pageControls/card-searc
 
     CardImageHoverPopupDirective,
     CardSearchDropdownComponent,
+    ManaFontPipe,
 
     LoginComponent,
 
@@ -93,6 +98,8 @@ import { CardSearchDropdownComponent } from './_controls/pageControls/card-searc
     MatInputModule,
     MatSelectModule,
     MatOptionModule,
+    MatSortModule,
+    MatMenuModule,
 
     DataTablesModule,
     BsDatepickerModule,
@@ -121,6 +128,9 @@ import { CardSearchDropdownComponent } from './_controls/pageControls/card-searc
         ]
       }      
     ])
+  ],
+  exports: [
+    ManaFontPipe,
   ],
   providers: [
     provideHttpClient(

@@ -1,3 +1,4 @@
+using BObj.Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +22,7 @@ namespace MtgCustomDecksBuilder.Server.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllHomebrews()
         {
-            List<DeckRuleCriterion> resultSet = new List<DeckRuleCriterion>();
+            var resultSet = new List<HomebrewDto>();
 
             try
             {
@@ -32,6 +33,7 @@ namespace MtgCustomDecksBuilder.Server.Controllers
                         .ThenInclude(x=>x.MtgSetFkNavigation)
                     .Include(x => x.DeckRuleCriteriaSetTypes)
                         .ThenInclude(x => x.SetTypeFkNavigation)
+                    .Select(HomebrewDto.FromEntity)
                     .ToList();
             }
             catch (Exception ex)
@@ -45,16 +47,18 @@ namespace MtgCustomDecksBuilder.Server.Controllers
         [HttpPost]
         public async Task<IActionResult> GetHomebrewsByCriteria(HomebrewSearchCriteria criteria)
         {
-            List<DeckRuleCriterion> resultSet = new List<DeckRuleCriterion>();
+            List<HomebrewDto> resultSet = new List<HomebrewDto>();
 
             try
             {
                 resultSet = _masterContext.DeckRuleCriteria.Where(x => true)
                     .Include(x => x.GameFormatFkNavigation)
                     .Include(x => x.MtgFormatFkNavigation)
-                    .Include(x=>x.DeckRuleCriteriaAllowedSets)
-                    .Include(x=>x.DeckRuleCriteriaSetTypes)
-                    //.Include(x => x.UserFkNavigation) //only include forward facing data
+                    .Include(x => x.DeckRuleCriteriaAllowedSets)
+                        .ThenInclude(x => x.MtgSetFkNavigation)
+                    .Include(x => x.DeckRuleCriteriaSetTypes)
+                        .ThenInclude(x => x.SetTypeFkNavigation)
+                    .Select(HomebrewDto.FromEntity)
                     .ToList();
             } catch (Exception ex)
             {

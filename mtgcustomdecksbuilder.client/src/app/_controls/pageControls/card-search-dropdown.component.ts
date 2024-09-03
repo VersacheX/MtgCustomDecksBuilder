@@ -11,6 +11,7 @@ import { FormControl } from '@angular/forms';
 export class CardSearchDropdownComponent implements OnInit {
   @Input() ColorIdentity: string;
   @Input() Homebrew: any;
+  @Input() DeckList: any[];
   @Output() cardSelected = new EventEmitter<any>();
 
   cards: any[] = [];
@@ -43,6 +44,7 @@ export class CardSearchDropdownComponent implements OnInit {
   searchCards(query: string) {
     return this.http.post<any[]>(this.baseUrl + 'mtgcard/GetDropdownSuggestions', {
       Homebrew: this.Homebrew,
+      IgnoredCardList: this.DeckList,
       ColorIdentity: this.ColorIdentity,
       Query: query
     });

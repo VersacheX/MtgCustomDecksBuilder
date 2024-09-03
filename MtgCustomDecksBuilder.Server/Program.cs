@@ -10,8 +10,11 @@ using Persistence.Schema;
 using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using Microsoft.Extensions.Caching.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddMemoryCache();
 
 var allowSpecificOrigins = "_allowClientOrigin";
 builder.Services.AddCors(options =>
@@ -136,6 +139,19 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var masterContext = scope.ServiceProvider.GetRequiredService<MtgCustomDecksBuilderContext>();
+    var cache = scope.ServiceProvider.GetRequiredService<IMemoryCache>();
+
+    var mtgCards = masterContext.MtgCards
+        .Include(c => c.MtgCardLegalities)
+        .Include(c => c.MtgCardSets)
+            .ThenInclude(cardSet => cardSet.MtgSetFkNavigation)
+        .ToList();
+
+    cache.Set("MtgCardsCache", mtgCards);
+}
 
 app.MapIdentityApi<MyUser>();
 

@@ -1,18 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using MtgCustomDecksBuilder.Server.Tools;
-using System.Data;
-using System.Data.Common;
-using System.Net.Http.Headers;
-using MtgApiManager.Lib.Service;
 using MtgApiManager.Lib.Core;
 using MtgApiManager.Lib.Model;
-using System.Net;
+using MtgApiManager.Lib.Service;
 using Persistence.Schema;
-using System.Collections.Generic;
 
 namespace MtgCustomDecksBuilder.Server.Controllers
 {
@@ -69,16 +60,17 @@ namespace MtgCustomDecksBuilder.Server.Controllers
                 DateTime releaseDate = new DateTime();
                 DateTime.TryParse(set.ReleaseDate, out releaseDate);
 
-                _masterContext.MtgSets.Add(new MtgSet()
-                {
-                    Block = set.Block,
-                    Code = set.Code,
-                    Expansion = set.Expansion,
-                    Name = set.Name,
-                    OnlineOnly = set.OnlineOnly,
-                    ReleaseDate = releaseDate,
-                    Type = set.Type
-                });
+                if(!_masterContext.MtgSets.Any(x=>x.Name == set.Name && x.Code == set.Code))
+                    _masterContext.MtgSets.Add(new MtgSet()
+                    {
+                        Block = set.Block,
+                        Code = set.Code,
+                        Expansion = set.Expansion,
+                        Name = set.Name,
+                        OnlineOnly = set.OnlineOnly,
+                        ReleaseDate = releaseDate,
+                        Type = set.Type
+                    });
             }
 
             if(resultList.Count> 0)
@@ -235,7 +227,8 @@ namespace MtgCustomDecksBuilder.Server.Controllers
                 }
                 #endregion
 
-                _masterContext.MtgCards.Add(newMtgCard);
+                if(!_masterContext.MtgCards.Any(card=>card.Name == newMtgCard.Name && card.Number == newMtgCard.Number && card.Set == newMtgCard.Set))
+                    _masterContext.MtgCards.Add(newMtgCard);
             }
 
             if (resultList.Count > 0)

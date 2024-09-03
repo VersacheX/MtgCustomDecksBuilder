@@ -28,7 +28,6 @@ export class SearchCardsComponent extends ListComponent implements OnInit {
 
     this.http.post<any[]>(this.baseUrl + 'mtgcard/GetMtgCardsByCriteria', this.searchCriteria).subscribe(result => {
       this.mtgCards = result;
-      console.log(this.mtgCards[0]);
 
     }, error => console.error(error));
   }

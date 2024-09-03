@@ -5,29 +5,42 @@
 <table>
   <tr>
     <td>
-      <label for="homebrewDropdown" class="form-label">Criteria</label>
-      <select id="homebrewDropdown" *ngIf="homebrews" [(ngModel)]="selectedHomebrew">
+      <label for="deckNameText" class="form-label">Deck Name</label>
+      <input type="text"
+             id="deckNameText"
+             class="form-control"
+             [(ngModel)]="deckName" />
+    </td>
+    <td>
+      <label for="homebrewDropdown" class="form-label">Homebrew</label><br/>
+      <select id="homebrewDropdown" *ngIf="homebrews" [(ngModel)]="selectedHomebrew" class="form-control">
         <option [value]="null">Any</option>
         <option *ngFor="let homebrew of homebrews" [ngValue]="homebrew">{{homebrew.Name}}</option>
       </select>
     </td>
+    <td style="text-align: right; vertical-align: bottom;">
+      <a (click)="toggleImportTable()">[Import]</a>
+
+      <div *ngIf="showImportTable" class="popup">
+        <table class="table" style="max-width:650px; min-width: 450px;">
+          <tr>
+            <td style="vertical-align: top;">
+              <label for="deckListTextArea" class="form-label">Deck List</label>
+              <textarea id="deckListTextArea" class="form-control" [(ngModel)]="deckImportData.DeckList" style="width: 100%; max-height:250px; height:250px;"></textarea>
+            </td>
+          </tr>
+          <tr>
+            <td align="right">
+              <button type="button" class="btn btn-outline-secondary" (click)="ImportDeck()">Import</button>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </td>
   </tr>
 </table>
 
-<table class="table" style="max-width:650px;">
-  <tr>
-    <td style="vertical-align: top;">
-      <label for="deckListTextArea" class="form-label">Deck List</label>
-      <textarea id="deckListTextArea" class="form-control" [(ngModel)]="deckImportData.DeckList" style="width: 100%; max-height:250px; height:250px;">
-      </textarea>
-    </td>
-  </tr>
-  <tr>
-    <td align="right">
-      <button type="button" class="btn btn-outline-secondary" (click)="ImportDeck()">Import</button>
-    </td>
-  </tr>
-</table>
+
 
 
 <!--<mat-form-field>
@@ -37,6 +50,7 @@
 <app-card-search-dropdown *ngIf="selectedCommander && selectedHomebrew"
                           [ColorIdentity]="selectedCommander.ColorIdentity"
                           [Homebrew]="selectedHomebrew"
+                          [DeckList]="rawMtgCardData"
                           (cardSelected)="handleSelectedCard($event)">
 </app-card-search-dropdown>
 <br />
@@ -45,29 +59,29 @@
 <table>
   <tr>
     <td style="width: 400px; position: relative; text-align: center; border: 1px solid #000; vertical-align: top; padding: 15px;">
-      <div *ngIf="selectedCommander" style="position: relative;">
-        <img *ngIf="selectedCommander2" [src]="selectedCommander2.ImageUrl" style="max-height: 250px; z-index: 0; position: relative;" />
-        <img *ngIf="selectedCommander" [src]="selectedCommander.ImageUrl" style="max-height: 250px; z-index: 1; position: absolute; top: 25px; left: 15px;" />
-
-      </div>
+      <table>
+        <tr style="height: 300px;">
+          <td>
+            <div *ngIf="selectedCommander" style="position: relative; display: inline-block;">
+              <img *ngIf="selectedCommander2" [src]="selectedCommander2.ImageUrl" style="max-height: 250px; z-index: 0; position: absolute; top: -35px; left: 50%; transform: translateX(-50%);" />
+              <img *ngIf="selectedCommander" [src]="selectedCommander.ImageUrl" style="max-height: 250px; z-index: 1; position: relative; margin-left: 35px;" />
+            </div>
+          </td>
+        </tr>
+      </table>
     </td>
     <td style="width: auto">
       <span *ngIf="this.rawMtgCardData">{{this.rawMtgCardData.length}} Total Cards</span>
       <div *ngFor="let type of typeOrder">
         <div *ngIf="orderedGroups && orderedGroups[type]">
           <h2><strong>{{ type | titlecase }}&nbsp;({{orderedGroups[type].length}})</strong></h2>
-          <table mat-table [dataSource]="orderedGroups[type]" class="mat-elevation-z8">
+          <table mat-table [dataSource]="dataSources[type]" matSort class="mat-elevation-z8">
             <!-- Name Column -->
             <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef width="60%">Name</th>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header width="60%">Name</th>
               <td mat-cell *matCellDef="let card" width="60%">
                 <span cardImageHoverPopup [attr.data-card]="card | json" [ngClass]="{'illegal-card': !IsCardLegal(card)}">{{card.Name}}</span><br />
-                <!--<font style="color: red">{{IsCardLegal(card) ? '' : 'Illegal in format'}}</font><br />
-                <i>{{card.Flavor}}</i>-->
               </td>
-
-
-              ng
             </ng-container>
 
             <!-- Set Column -->
@@ -78,22 +92,30 @@
 
             <!-- ManaCost Column -->
             <ng-container matColumnDef="manaCost" width="15px">
-              <th mat-header-cell *matHeaderCellDef class="text-right">Mana Cost</th>
-              <td mat-cell *matCellDef="let card" class="text-right">{{ card.ManaCost }}</td>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header style="text-align: center;">Mana Cost</th>
+              <td mat-cell *matCellDef="let card" class="mana-cost" [innerHTML]="card.ManaCost | manaFont"></td>
             </ng-container>
 
+            <!-- Actions Column -->
             <ng-container matColumnDef="actions">
               <th mat-header-cell *matHeaderCellDef width="10%"> </th>
               <td mat-cell *matCellDef="let card" width="10%">
-                <button *ngIf="isLegendaryCreature(card)" mat-button (click)="SetCardAsPartner(card)">Set Partner</button>
-                <button *ngIf="isLegendaryCreature(card)" mat-button (click)="SetCardAsCommander(card)">Set Commander</button>
-                <button mat-button (click)="openCardDetails(card)">Detail</button>
-                <button mat-button (click)="RemoveCard(card)">Remove</button>
+                <mat-menu #menu="matMenu">
+                  <button *ngIf="isLegendaryCreature(card)" mat-menu-item (click)="SetCardAsPartner(card)">Set Partner</button>
+                  <button *ngIf="isLegendaryCreature(card)" mat-menu-item (click)="SetCardAsCommander(card)">Set Commander</button>
+                  <button mat-menu-item (click)="openCardDetails(card)">Detail</button>
+                  <button mat-menu-item (click)="RemoveCard(card)">Remove</button>
+                </mat-menu>
+                <button mat-button [matMenuTriggerFor]="menu">Actions</button>
               </td>
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            <!--<ng-container *ngFor="let card of dataSources[type]">
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{'hidden-row': card.Name === selectedCommander?.Name || card.Name === selectedCommander2?.Name}"></tr>
+            </ng-container>-->
+
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{'hidden-row': row.Name === selectedCommander?.Name || row.Name === selectedCommander2?.Name}"></tr>
           </table>
         </div>
       </div>
