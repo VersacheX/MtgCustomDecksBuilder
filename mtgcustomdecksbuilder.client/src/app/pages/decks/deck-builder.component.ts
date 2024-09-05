@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, Inject, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { DetailComponent } from '../../_controls/detail-component.component';
@@ -9,60 +9,57 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 import { CardDetailsDialog } from './card-detail-dialog.component';
 import { SuggestedCardModalComponent } from './popup/suggested-card-modal.component';
+import { ExistingComboModalComponent } from './popup/existing-combo-modal.component';
+import { SuggestedComboModalComponent } from './popup/suggested-combo-modal.component';
+import { SearchCardsComponent } from '../search-cards/search-cards.component';
 
 @Component({
   selector: 'app-deck-builder',
   templateUrl: './deck-builder.component.html',
   styleUrls: ['./deck-builder.component.css']
 })
-export class DeckBuilderComponent extends DetailComponent implements OnInit, AfterViewInit {
-  public deckImportData: any = {};
-  //public mtgCards = new MatTableDataSource<any>([]);
-  public rawMtgCardData: any[];
-  public deckName: string = '';
-  //public dataTable: any;
-  public showImportTable: boolean = false;
-
+export class DeckBuilderComponent extends DetailComponent implements OnInit {
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatTable) table: MatTable<any>;
-  @ViewChildren(MatSort) sorts: QueryList<MatSort>;
-  public dataSources: { [key: string]: MatTableDataSource<any> } = {};
-  public orderedGroups: Record<string, any[]>;
+  @ViewChild(MatSort) sharedSort: MatSort;
 
   public selectedHomebrew: any = null;
   public selectedCommander: any = null;
   public selectedCommander2: any = null;
+  public selectedCompanion: any = null;
+  public rawMtgCardData: any[];
+  public deckName: string = '';
 
+  public deckImportData: any = {};
   public homebrews: any;
+  public dataSources: { [key: string]: MatTableDataSource<any> } = {};
+  public orderedGroups: Record<string, any[]>;
 
+  public showImportTable: boolean = false;
   public displayedColumns: string[] = ['name', 'set', 'manaCost', 'actions'];
   public typeOrder = [
     'battle', 'planeswalker', 'creature', 'sorcery', 'instant',
     'artifact', 'enchantment', 'land'
   ];
-  //public displayedColumns: string[] = ['name', 'image', 'actions'];
-
 
   constructor(private http: HttpClient, @Inject('BASE_URL') private baseUrl: string, public Route: ActivatedRoute, private changeDetectorRef: ChangeDetectorRef, public dialog: MatDialog) {
     super(Route);
-  }
+  } 
 
-  ngAfterViewInit() {
-    this.sorts.changes.subscribe(() => {
-      this.sorts.forEach((sort, index) => {
-        const type = this.typeOrder[index];
-        if (this.dataSources[type]) {
-          this.dataSources[type].sort = sort;
-          this.dataSources[type].sortData(this.dataSources[type].data, sort);
-        }
-      });
-    });
+  override GetData() {
+    this.http.get<any>(this.baseUrl + 'decks/GetById/' + this.BusinessObjectId).subscribe(result => {
+      console.log(result);
+      this.selectedHomebrew = result.Homebrew;
+      this.selectedCommander = result.Commander1;
+      this.selectedCommander2 = result.Commander2;
+      this.selectedCompanion = result.Companion;
+      this.deckName = result.Name;
+      this.setdeckListData(result.DeckList);
+  
+    }, error => console.error(error));
   }
 
   override LoadControlsData() {
-    //this.mtgCards.paginator = this.paginator;
-    //this.mtgCards.sort = this.sort;
-
     this.http.get<any[]>(this.baseUrl + 'homebrew/GetAllHomebrews').subscribe(result => {
       this.homebrews = result;
 
@@ -73,11 +70,7 @@ export class DeckBuilderComponent extends DetailComponent implements OnInit, Aft
     this.toggleImportTable();
 
     this.http.post<any[]>(this.baseUrl + 'decks/Import', this.deckImportData).subscribe(result => {
-
-
-      this.rawMtgCardData = result;
-      this.orderedGroups = this.groupAndOrderCardsByType(this.rawMtgCardData);
-      this.updateDataSources();
+      this.setdeckListData(result);
 
 
 
@@ -138,9 +131,36 @@ export class DeckBuilderComponent extends DetailComponent implements OnInit, Aft
     return orderedGroups;
   }
 
+  GetDeckColorIdentity() {
+    let identity: string[] = [];
+
+    if (!this.selectedCommander && !this.selectedCommander2) {
+      identity = ['W', 'U', 'B', 'R', 'G'];
+    }
+
+    if (this.selectedCommander) {
+      identity.push(...this.selectedCommander.ColorIdentity.split(','));
+    }
+
+    if (this.selectedCommander2) {
+      const commander2Identities = this.selectedCommander2.ColorIdentity.split(',');
+      commander2Identities.forEach(id => {
+        if (!identity.includes(id)) {
+          identity.push(id);
+        }
+      });
+    }
+
+    return identity;
+  }
+
   IsCardLegal(card: any) {
     if (this.selectedCommander || this.selectedCommander2 || !card.ColorIdentity || card.ColorIdentity === '') {
       let identity: string[] = [];
+
+      if (!this.selectedCommander && !this.selectedCommander2) {
+        identity = ['W', 'U', 'B', 'R','G'];
+      }
 
       if (this.selectedCommander) {
         identity.push(...this.selectedCommander.ColorIdentity.split(','));
@@ -156,13 +176,13 @@ export class DeckBuilderComponent extends DetailComponent implements OnInit, Aft
       }
 
       const cardIdentities = card.ColorIdentity.split(',');
-      if (cardIdentities.some(cardColor => !identity.includes(cardColor))) {
+      if (!cardIdentities.every(cardColor => cardColor == '' || identity.includes(cardColor))) {
         return false;
       }
     }
 
 
-    if (this.selectedHomebrew != null) {
+    if (this.selectedHomebrew) {
       const allowedSets = this.selectedHomebrew.AllowedSets;
       const setTypes = this.selectedHomebrew.SetTypes;
 
@@ -188,25 +208,11 @@ export class DeckBuilderComponent extends DetailComponent implements OnInit, Aft
     if (index > -1) {
       const updatedData = this.rawMtgCardData.slice();
       updatedData.splice(index, 1);
-      this.rawMtgCardData = updatedData;
-      this.orderedGroups = this.groupAndOrderCardsByType(this.rawMtgCardData);
-      this.updateDataSources();
-      console.log('Updated mtgCards:', this.rawMtgCardData);
+      this.setdeckListData(updatedData);
     } else {
       console.log('Card not found in mtgCards');
     }
   }
-
-  //applyFilter(filterValue: string) {
-  //  this.mtgCards.filter = filterValue.trim().toLowerCase();
-  //}
-
-  //openCardDetails(card: any) {
-  //  const dialogRef = this.dialog.open(CardDetailsDialog, {
-  //    width: '250px',
-  //    data: card
-  //  });
-  //}
 
   openCardDetails(card: any): void {
     const dialogRef = this.dialog.open(CardDetailsDialog, {
@@ -217,6 +223,44 @@ export class DeckBuilderComponent extends DetailComponent implements OnInit, Aft
     dialogRef.afterClosed().subscribe(result => {
       console.log('The dialog was closed');
       // handle the result
+    });
+  }
+
+  handleSelectedCard(card: any) {
+    if (!this.rawMtgCardData)
+      this.rawMtgCardData = [];
+    const updatedData = this.rawMtgCardData.slice();
+    updatedData.push(card);
+    this.setdeckListData(updatedData);
+  }
+
+  setdeckListData(data) {
+    this.rawMtgCardData = data;
+    this.orderedGroups = this.groupAndOrderCardsByType(this.rawMtgCardData);
+    this.updateDataSources();
+
+  }
+
+  updateDataSources() {
+    for (let type in this.orderedGroups) {
+      this.dataSources[type] = new MatTableDataSource(this.orderedGroups[type]);
+      this.dataSources[type].sortingDataAccessor = (item, property) => {
+        switch (property) {
+          case 'name': return item.Name.toLowerCase();
+          case 'manaCost': return item.Cmc;
+          default: return item[property];
+        }
+      };
+      this.dataSources[type].sort = this.sharedSort;
+    }
+  }
+
+  showEdhrecSuggestions() {
+    this.GetEdhrecCards().subscribe(result => {
+      this.openSuggestedCardModal(result);
+
+    }, error => {
+      console.log('Error details:', error);
     });
   }
 
@@ -232,49 +276,64 @@ export class DeckBuilderComponent extends DetailComponent implements OnInit, Aft
     });
   }
 
-  handleSelectedCard(card: any) {
-    const updatedData = this.rawMtgCardData.slice();
-    updatedData.push(card);
-    this.rawMtgCardData = updatedData;
-    this.orderedGroups = this.groupAndOrderCardsByType(this.rawMtgCardData);
-    this.updateDataSources();
+  GetEdhrecCards() {
+    return this.http.post<any[]>(this.baseUrl + 'edhrec/GetSuggestedCardsByCriteria', { "CommanderName": this.selectedCommander.Name, "CommanderName2": this.selectedCommander2?.Name, "Homebrew": this.selectedHomebrew, "MtgCards": this.rawMtgCardData });
   }
 
-  updateDataSources() {
-    for (let type in this.orderedGroups) {
-      this.dataSources[type] = new MatTableDataSource(this.orderedGroups[type]);
-      this.dataSources[type].sortingDataAccessor = (item, property) => {
-        switch (property) {
-          case 'name': return item.Name.toLowerCase();
-          case 'manaCost': return item.Cmc;
-          default: return item[property];
-        }
-      };
-    }
-  }
-
-  showEdhrecSuggestions() {
-    this.GetEdhrecCards().subscribe(result => {
-      this.openSuggestedCardModal(result);
+  showExistingCombos() {
+    this.http.post<any[]>(this.baseUrl + 'spellbook/GetIncludedCombos', { "MtgCards": this.rawMtgCardData }).subscribe(result => {
+      if (result)
+        this.openExistingComboModal(result);
 
     }, error => {
       console.log('Error details:', error);
     });
   }
 
-  GetEdhrecCards() {
-    return this.http.post<any[]>(this.baseUrl + 'edhrec/GetSuggestedCardsByCriteria', { "CommanderName": this.selectedCommander.Name, "CommanderName2": this.selectedCommander2?.Name, "Homebrew": this.selectedHomebrew, "MtgCards": this.rawMtgCardData });
+  openExistingComboModal(combos: any[]) {
+    const dialogRef = this.dialog.open(ExistingComboModalComponent, {
+      width: '40vw',
+      data: { combos }
+    });
+
+    const instance = dialogRef.componentInstance;
   }
 
   showComboSuggestions() {
     this.GetSpellbookCards().subscribe(result => {
       if (result)
-        console.log(result);
+        this.openSuggestedComboModal(result);
 
     }, error => {
-      //console.error('Error importing deck:', error);
       console.log('Error details:', error);
-      //alert('An error occurred while importing the deck. Please try again.');
+    });
+  }
+
+  openSuggestedComboModal(combos: any[]) {
+    let deckList = this.rawMtgCardData;
+    const dialogRef = this.dialog.open(SuggestedComboModalComponent, {
+      width: '40vw',
+      data: { combos, deckList }
+    });
+
+    const instance = dialogRef.componentInstance;
+    instance.cardSelected.subscribe((selectedCard: any) => {
+      this.handleSelectedCard(selectedCard);
+    });
+  }
+
+  openAdvancedSearchModal() {
+    let deckList = this.rawMtgCardData;
+    let homebrew = this.selectedHomebrew;
+    let colorIdentity = this.GetDeckColorIdentity();
+    const dialogRef = this.dialog.open(SearchCardsComponent, {
+      width: '80vw',
+      data: { homebrew, deckList, colorIdentity }
+    });
+
+    const instance = dialogRef.componentInstance;
+    instance.cardSelected.subscribe((selectedCard: any) => {
+      this.handleSelectedCard(selectedCard);
     });
   }
 
@@ -299,5 +358,25 @@ export class DeckBuilderComponent extends DetailComponent implements OnInit, Aft
 
   toggleImportTable() {
     this.showImportTable = !this.showImportTable;
+  }
+
+  override ValidateSaveData() {
+    return true;
+  }
+
+  override SaveData() {
+    this.http.post<any[]>(this.baseUrl + 'decks/Save', {
+      "Id": this.BusinessObjectId,
+      "Name": this.deckName,
+      "Homebrew": this.selectedHomebrew,
+      "Commander1": this.selectedCommander,
+      "Commander2": this.selectedCommander2,
+      "Companion": this.selectedCompanion,
+      "DeckList": this.rawMtgCardData
+    }).subscribe(result => {      
+
+    }, error => {
+      console.log('Error details:', error);
+    });
   }
 }

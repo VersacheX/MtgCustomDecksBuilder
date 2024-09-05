@@ -1,0 +1,72 @@
+<h1 id="tableLabel">Decks</h1>
+
+<p>Public Decks</p>
+
+<table class="table" style="max-width:650px;">
+  <tr>
+    <td>
+      <table class="table">
+      </table>
+    </td>
+    <td style="vertical-align: top;">
+    </td>
+    <td style="vertical-align: top;">
+    </td>
+  </tr>
+  <tr>
+    <td align="right" colspan="3">
+      <button type="button" class="btn btn-outline-primary" [routerLink]="['/deck-builder']">Add</button>
+      <button type="button" class="btn btn-outline-secondary" (click)="LoadDataGridsData()">Search</button>
+    </td>
+  </tr>
+</table>
+
+<p *ngIf="!userDecks"><em>Loading...</em></p>
+<table datatable *ngIf="userDecks" [dtOptions]="userDecksDtOptions" width="100%">
+  <thead>
+    <tr>
+      <th width="90%">Name</th>
+      <th width="10%"></th>
+      <!--<th width="25%">Format</th>-->
+      <!--<th width="25%">Allowed Sets</th>
+  <th width="25%">Set Types</th>-->
+      <!--<th width="25%">Block</th>
+  <!--<th width="25%">Type</th>
+  <th width="25%">Online Only</th>
+  <th width="25%">ReleaseDate</th>-->
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let deck of userDecks">
+      <td width="25%">
+        {{deck.DeckName}}
+      </td>
+      <td>
+        <a [routerLink]="['/deck-builder', deck.UserDeckPk]">View</a>
+      </td>
+      <!--<td width="25%">
+        {{brew.GameFormatName}}
+      </td>
+      <td width="25%">
+        {{brew.AllowedSets.length}}
+      </td>
+      <td width="25%">
+        {{brew.SetTypes.length}}
+      </td>-->
+      <!--<td width="25%">
+    {{set.Block}}
+  </td>
+  <td width="25%">
+    {{set.Type}}
+  </td>
+  <td width="25%">
+    {{set.OnlineOnly}}
+  </td>
+  <td width="25%">
+    {{set.ReleaseDate|date:'yyyy-MM-dd'}}
+  </td>-->
+    </tr>
+  </tbody>
+
+</table>
+

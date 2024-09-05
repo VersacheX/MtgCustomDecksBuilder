@@ -1,15 +1,15 @@
 using BObj.Dto;
-using Dapper;
+using BObj.External;
+using LinqKit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Newtonsoft.Json;
 using Persistence.Schema;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
+using System.Linq.Expressions;
+using System.Text.RegularExpressions;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace MtgCustomDecksBuilder.Server.Controllers
 {
@@ -40,16 +40,43 @@ namespace MtgCustomDecksBuilder.Server.Controllers
                     return BadRequest("Cache not found");
                 }
 
-                resultList = cachedMtgCards
-                    //_masterContext.MtgCards
-                .Where(x =>
-                (!string.IsNullOrWhiteSpace(criteria.Name) ? x.Name.Contains(criteria.Name) : true)
-                && (!string.IsNullOrWhiteSpace(criteria.SetType) ? x.MtgCardSets.Any(y => y.MtgSetFkNavigation.Type == criteria.SetType && y.MtgSetFkNavigation.Code == x.Set) : true)
-                && (criteria.SetFromDate != null ? x.MtgCardSets.Any(y => y.MtgSetFkNavigation.ReleaseDate >= criteria.SetFromDate && y.MtgSetFkNavigation.Code == x.Set) : true)
-                && (criteria.SetToDate != null ? x.MtgCardSets.Any(y => y.MtgSetFkNavigation.ReleaseDate <= criteria.SetToDate && y.MtgSetFkNavigation.Code == x.Set) : true)
-                && (criteria.Legality != null ? x.MtgCardLegalities.Any(y => y.Format == criteria.Legality && (y.Legality == "Legal" || y.Legality == "Restricted")) : true)
-                )
-                .GroupBy(x => x.Name)
+                var predicate = BuildPredicate(criteria);
+                var query = cachedMtgCards.AsQueryable();
+                query = query.Where(predicate);
+                query = query.Where(x => (criteria.Homebrew != null ? criteria.Homebrew.IsCardLegal(x) : true));
+                
+                var ignoredNames = criteria.IgnoredCardList?.Select(card => card.Name.ToLower()).ToList();
+                if (ignoredNames != null && ignoredNames.Any())
+                {
+                    query = query.Where(card => !ignoredNames.Contains(card.Name.ToLower()));
+                }
+
+
+                if (criteria.ColorIdentity?.Length > 0)
+                {
+                    var legalIdentitiesSet = new HashSet<string>(criteria.ColorIdentity);
+
+                    // Preprocess the cards to create a list of sets for ColorIdentity
+                    var preprocessedCards = query.ToList().Select(card => new
+                    {
+                        Card = card,
+                        ColorIdentitySet = new HashSet<string>(card.ColorIdentity.Split(','))
+                    }).ToList();
+
+                    // Filter the preprocessed cards
+                    var filteredCards = preprocessedCards
+                        .Where(pc => pc.ColorIdentitySet.All(cardColor => cardColor == string.Empty || legalIdentitiesSet.Contains(cardColor)))
+                        .Select(pc => pc.Card)
+                        .ToList();
+
+                    // Filter the original query based on the filtered cards
+                    query = query.Where(card => filteredCards.Contains(card));
+                }
+                else
+                    query = query.Where(card => string.IsNullOrWhiteSpace(card.ColorIdentity));
+
+
+                resultList = query.GroupBy(x => x.Name)
                 .Select(x => x.FirstOrDefault())
                 .Distinct()
                 .Take(5000)
@@ -62,6 +89,77 @@ namespace MtgCustomDecksBuilder.Server.Controllers
             }
 
             return Ok(resultList);
+        }
+
+        private static Expression<Func<MtgCard, bool>> BuildPredicate(MtgCardSearchCriteria criteria)
+        {
+            var predicate = PredicateBuilder.New<MtgCard>(true);
+
+            if (!string.IsNullOrWhiteSpace(criteria.Name))
+            {
+                predicate = predicate.And(x => x.Name.ToLower().Contains(criteria.Name.ToLower()));
+            }
+
+            if (!string.IsNullOrWhiteSpace(criteria.SetType))
+            {
+                predicate = predicate.And(x => x.MtgCardSets.Any(y => y.MtgSetFkNavigation.Type == criteria.SetType && y.MtgSetFkNavigation.Code == x.Set));
+            }
+
+            if (criteria.SetFromDate != null)
+            {
+                predicate = predicate.And(x => x.MtgCardSets.Any(y => y.MtgSetFkNavigation.ReleaseDate >= criteria.SetFromDate && y.MtgSetFkNavigation.Code == x.Set));
+            }
+
+            if (criteria.SetToDate != null)
+            {
+                predicate = predicate.And(x => x.MtgCardSets.Any(y => y.MtgSetFkNavigation.ReleaseDate <= criteria.SetToDate && y.MtgSetFkNavigation.Code == x.Set));
+            }
+
+            if (criteria.Legality != null)
+            {
+                predicate = predicate.And(x => x.MtgCardLegalities.Any(y => y.Format == criteria.Legality && (y.Legality == "Legal" || y.Legality == "Restricted")));
+            }
+
+            if (!string.IsNullOrWhiteSpace(criteria.Text))
+            {
+                var textQueries = Regex.Matches(criteria.Text, @"[\""].+?[\""]|[^ ]+")
+                                       .Cast<Match>()
+                                       .Select(m => m.Value.Replace("\"", "").ToLower())
+                                       .ToArray();
+
+                foreach (var query in textQueries)
+                {
+                    predicate = predicate.And(x => x.Text != null && x.Text.ToLower().Contains(query));
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(criteria.IgnoreText))
+            {
+                var textQueries = Regex.Matches(criteria.IgnoreText, @"[\""].+?[\""]|[^ ]+")
+                                       .Cast<Match>()
+                                       .Select(m => m.Value.Replace("\"", "").ToLower())
+                                       .ToArray();
+
+                foreach (var query in textQueries)
+                {
+                    predicate = predicate.And(x => string.IsNullOrWhiteSpace(x.Text) || (!string.IsNullOrWhiteSpace(x.Text) && !x.Text.ToLower().Contains(query)));
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(criteria.CardType))
+            {
+                var textQueries = Regex.Matches(criteria.CardType, @"[\""].+?[\""]|[^ ]+")
+                                       .Cast<Match>()
+                                       .Select(m => m.Value.Replace("\"", "").ToLower())
+                                       .ToArray();
+
+                foreach (var query in textQueries)
+                {
+                    predicate = predicate.And(x => x.Type != null && x.Type.ToLower().Contains(query));
+                }
+            }
+
+            return predicate;
         }
 
         [HttpPost]
@@ -88,13 +186,13 @@ namespace MtgCustomDecksBuilder.Server.Controllers
 
                 if (!string.IsNullOrWhiteSpace(criteria.Query))
                 {
-                    query = query.Where(card => card.Name.Contains(criteria.Query));
+                    query = query.Where(card => card.Name.ToLower().Contains(criteria.Query.ToLower()));
                 }
 
-                var ignoredNames = criteria.IgnoredCardList?.Select(card => card.Name).ToList();
+                var ignoredNames = criteria.IgnoredCardList?.Select(card => card.Name.ToLower()).ToList();
                 if (ignoredNames != null && ignoredNames.Any())
                 {
-                    query = query.Where(card => !ignoredNames.Contains(card.Name));
+                    query = query.Where(card => !ignoredNames.Contains(card.Name.ToLower()));
                 }
 
                 if (!string.IsNullOrWhiteSpace(criteria.ColorIdentity))
@@ -110,7 +208,7 @@ namespace MtgCustomDecksBuilder.Server.Controllers
 
                     // Filter the preprocessed cards
                     var filteredCards = preprocessedCards
-                        .Where(pc => pc.ColorIdentitySet.All(cardColor => legalIdentitiesSet.Contains(cardColor)))
+                        .Where(pc => pc.ColorIdentitySet.All(cardColor => cardColor == string.Empty || legalIdentitiesSet.Contains(cardColor)))
                         .Select(pc => pc.Card);
 
                     query = filteredCards.AsQueryable();
@@ -165,12 +263,18 @@ namespace MtgCustomDecksBuilder.Server.Controllers
     {
         public string? CmcTo { get; set; }
         public string? Name { get; set; }
+        public string? Text { get; set; }
+        public string? CardType { get; set; }
+        public string? IgnoreText { get; set; }
         public string? SetCode { get; set; }
         public string? SetType { get; set; }
+        public string[]? ColorIdentity { get; set; }
 
         public DateTime? SetFromDate { get; set; }
         public DateTime? SetToDate { get; set; }
         public string? Legality { get; set; }
+        public HomebrewDto? Homebrew { get; set; }
+        public List<MtgCardDto>? IgnoredCardList { get; set; }
     }
 
 }

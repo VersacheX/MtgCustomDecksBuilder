@@ -51,6 +51,9 @@ import { SuggestedCardModalComponent } from './pages/decks/popup/suggested-card-
 import { CardImageHoverPopupDirective } from './_directives/CardImageHoverPopupDirective';
 import { CardSearchDropdownComponent } from './_controls/pageControls/card-search-dropdown.component';
 import { ManaFontPipe } from './_pipes/mana-font.pipe';
+import { DeckListComponent } from './pages/decks/deck-list.component';
+import { ExistingComboModalComponent } from './pages/decks/popup/existing-combo-modal.component';
+import { SuggestedComboModalComponent } from './pages/decks/popup/suggested-combo-modal.component';
 
 
 
@@ -79,8 +82,12 @@ import { ManaFontPipe } from './_pipes/mana-font.pipe';
     EditHomebrewComponent,
     ImportDeckComponent,
     DeckBuilderComponent,
+    DeckListComponent,
+
     CardDetailsDialog,
-    SuggestedCardModalComponent 
+    SuggestedCardModalComponent,
+    ExistingComboModalComponent,
+    SuggestedComboModalComponent
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
@@ -118,12 +125,15 @@ import { ManaFontPipe } from './_pipes/mana-font.pipe';
 
           { path: 'homebrews', component: HomebrewsComponent, canActivate: [AuthGuard] },
           { path: 'import-deck', component: ImportDeckComponent, canActivate: [AuthGuard] },
-          { path: 'deck-builder', component: DeckBuilderComponent, canActivate: [AuthGuard] }
+          { path: 'deck-builder', component: DeckBuilderComponent, canActivate: [AuthGuard] },
+          { path: 'deck-builder/:id', component: DeckBuilderComponent, canActivate: [AuthGuard] },
+          { path: 'deck-list', component: DeckListComponent, canActivate: [AuthGuard] }
         ]
       },
       {
         path: '', component: PopupLayoutComponent,
         children: [
+          { path: 'edit-homebrew', component: EditHomebrewComponent, canActivate: [AuthGuard] },
           { path: 'edit-homebrew/:id', component: EditHomebrewComponent, canActivate: [AuthGuard] }
         ]
       }      

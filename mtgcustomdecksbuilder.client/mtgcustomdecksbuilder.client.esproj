@@ -9,6 +9,5 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="src\app\_pipes\" />
-    <Folder Include="src\app\pages\decks\popup\" />
   </ItemGroup>
 </Project>

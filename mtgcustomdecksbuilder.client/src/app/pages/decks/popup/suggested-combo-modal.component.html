@@ -1,0 +1,20 @@
+<h2 mat-dialog-title>Suggested Combos</h2>
+<mat-dialog-content class="modal-content">
+  <div class="card-container">
+    <div *ngFor="let combo of data.combos; let i = index" class="combo-row">
+      <h6>Combo {{ i + 1 }}</h6>
+      <div class="card-row">
+        <img *ngFor="let card of combo.Cards"
+             [src]="card.ImageUrl"
+             [alt]="card.Name"
+             cardImageHoverPopup [attr.data-card]="card | json"
+             class="card-image"
+             [class.shaded]="isCardInDeckList(card)"
+             (click)="isCardInDeckList(card) ? null : selectCard(card)">
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button mat-dialog-close>Close</button>
+</mat-dialog-actions>

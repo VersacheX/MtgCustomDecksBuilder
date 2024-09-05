@@ -1,0 +1,26 @@
+.modal-content {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.card-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.card-image {
+  width: 100px;
+  height: auto;
+  cursor: pointer;
+}
+
+.combo-row {
+    text-align:center;
+    width: 100%;
+}
+
+.card-image.shaded {
+  opacity: 0.5;
+  pointer-events: none; /* This will disable the click event */
+}

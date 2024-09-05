@@ -12,15 +12,14 @@
              [(ngModel)]="deckName" />
     </td>
     <td>
-      <label for="homebrewDropdown" class="form-label">Homebrew</label><br/>
+      <label for="homebrewDropdown" class="form-label">Homebrew</label><br />
       <select id="homebrewDropdown" *ngIf="homebrews" [(ngModel)]="selectedHomebrew" class="form-control">
-        <option [value]="null">Any</option>
+        <option [ngValue]="undefined">Any</option>
         <option *ngFor="let homebrew of homebrews" [ngValue]="homebrew">{{homebrew.Name}}</option>
       </select>
     </td>
     <td style="text-align: right; vertical-align: bottom;">
       <a (click)="toggleImportTable()">[Import]</a>
-
       <div *ngIf="showImportTable" class="popup">
         <table class="table" style="max-width:650px; min-width: 450px;">
           <tr>
@@ -36,6 +35,7 @@
           </tr>
         </table>
       </div>
+      <button (click)="Save()">Save</button>
     </td>
   </tr>
 </table>
@@ -45,17 +45,18 @@
 
 <!--<mat-form-field>
   <mat-label>Search</mat-label>
-  <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Search cards">
+  <input matInput (keyup)="applyFilter($event.target.value)" placeholder="Search cards">*ngIf="selectedCommander && selectedHomebrew"
 </mat-form-field>-->
-<app-card-search-dropdown *ngIf="selectedCommander && selectedHomebrew"
-                          [ColorIdentity]="selectedCommander.ColorIdentity"
+<app-card-search-dropdown [ColorIdentity]="selectedCommander?.ColorIdentity ?? 'G,W,R,U,B'"
                           [Homebrew]="selectedHomebrew"
                           [DeckList]="rawMtgCardData"
                           (cardSelected)="handleSelectedCard($event)">
 </app-card-search-dropdown>
 <br />
+<a (click)="showExistingCombos()">[Show Combos]</a>
 <a (click)="showComboSuggestions()">[Show Combo Suggestions]</a>
 <a (click)="showEdhrecSuggestions()">[Show Edhrec Suggestions]</a>
+<a (click)="openAdvancedSearchModal()">[Advanced Search]</a>
 <table>
   <tr>
     <td style="width: 400px; position: relative; text-align: center; border: 1px solid #000; vertical-align: top; padding: 15px;">

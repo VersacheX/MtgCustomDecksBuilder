@@ -16,13 +16,13 @@ namespace MtgCustomDecksBuilder.Server.Controllers
         {
         }
 
-        protected int GetStoreFrontId()
+        protected int GetUserId()
         {
-            string storeID = User.Claims.FirstOrDefault(x => x.Type == "SFAdministratorStorefrontID")?.Value;
+            string userId = User.Claims.FirstOrDefault(x => x.Type == "UserPK")?.Value;
 
-            int storeId = 0;
-            int.TryParse(storeID, out storeId);
-            return storeId;
+            int userPk = 0;
+            int.TryParse(userId, out userPk);
+            return userPk;
         }
     }
 }

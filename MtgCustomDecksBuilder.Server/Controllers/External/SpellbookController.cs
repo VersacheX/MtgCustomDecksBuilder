@@ -4,11 +4,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.OpenApi.Extensions;
 using Persistence.Schema;
 using System.Data;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MtgCustomDecksBuilder.Server.Controllers
 {
@@ -27,9 +29,75 @@ namespace MtgCustomDecksBuilder.Server.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> GetIncludedCombos(SpellbookSearchCriteria criteria)
+        {
+            List<ComboDto> resultList = new List<ComboDto>();
+            string[] cardsAlreadyInDeck = criteria.MtgCards.Select(x => x.Name).ToArray();
+
+            using (var client = new HttpClient())
+            {
+                AddSpellbookHeaders(client);
+
+                var jsonData = new
+                {
+                    commanders = new string[] { },
+                    main = cardsAlreadyInDeck
+                };
+                string jsonString = JsonSerializer.Serialize(jsonData);
+
+                var content = new StringContent(jsonString, Encoding.UTF8, "application/json");
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+                var response = await client.PostAsync("https://backend.commanderspellbook.com/find-my-combos", content);
+                var responseString = await response.Content.ReadAsStringAsync();
+
+                using (JsonDocument doc = JsonDocument.Parse(responseString))
+                {
+                    JsonElement root = doc.RootElement;
+                    JsonElement results = root.GetProperty("results");
+                    JsonElement includedArray = results.GetProperty("included");
+
+                    var includedList = JsonSerializer.Deserialize<List<Included>>(includedArray.GetRawText());
+
+                    if (includedList == null)
+                    {
+                        throw new Exception("Failed to parse the included array.");
+                    }
+
+                    var uniqueCardNames = includedList
+                            .SelectMany(root => root.Uses)
+                            .Select(use => use.Card.Name)
+                            .Distinct()
+                            .ToList();
+
+                    // Retrieve cached data
+                    if (!_cache.TryGetValue("MtgCardsCache", out List<MtgCard> cachedMtgCards))
+                    {
+                        return BadRequest("Cache not found");
+                    }
+
+                    resultList = includedList.Select(include => new ComboDto
+                                            {
+                                                IncludeId = include.Id,
+                                                Cards = cachedMtgCards
+                                                    .Where(card => include.Uses.Any(use => use.Card.Name == card.Name))
+                                                    .GroupBy(card => card.Name)
+                                                    .Select(group => MtgCardDto.FromEntity(group.First()))
+                                                    .ToList()
+                                            }).OrderBy(combo => combo.Cards.Count)
+                                            .ToList();
+
+
+                }
+            }
+
+            return Ok(resultList);
+        }
+
+        [HttpPost]
         public async Task<IActionResult> GetSuggestedCardsByCriteria(SpellbookSearchCriteria criteria)
         {
-            List<MtgCardDto> legalCards = new List<MtgCardDto>();
+            List<ComboDto> returnData = new List<ComboDto>();
             string[] cardsAlreadyInDeck = criteria.MtgCards.Select(x=>x.Name).ToArray();
 
             using (var client = new HttpClient())
@@ -54,14 +122,6 @@ namespace MtgCustomDecksBuilder.Server.Controllers
                     #region Get included and almost included sections of Spellbook results
                     JsonElement root = doc.RootElement;
                     JsonElement results = root.GetProperty("results");
-                    JsonElement includedArray = results.GetProperty("included");
-
-                    var includedList = JsonSerializer.Deserialize<List<Included>>(includedArray.GetRawText());
-
-                    if (includedList == null)
-                    {
-                        throw new Exception("Failed to parse the included array.");
-                    }
 
                     JsonElement almostIncludedArray = results.GetProperty("almostIncluded");
                     var almostIncludedList = JsonSerializer.Deserialize<List<Included>>(almostIncludedArray.GetRawText());
@@ -86,10 +146,6 @@ namespace MtgCustomDecksBuilder.Server.Controllers
                     /////////////////////////////////////////////////////////////////////////////
                     // Step 2: Perform the complex filtering in-memory
                     var distinctMtgCards = cachedMtgCards
-                        //_masterContext.MtgCards
-                        //.Include(card => card.MtgCardLegalities)
-                        //.Include(card => card.MtgCardSets)
-                        //    .ThenInclude(cardSet => cardSet.MtgSetFkNavigation)
                         .Where(card => almostIncludedCardNames.Contains(card.Name))
                         .GroupBy(card => card.Name)
                         .Select(group => MtgCardDto.FromEntity(group.First()))
@@ -97,7 +153,7 @@ namespace MtgCustomDecksBuilder.Server.Controllers
 
 
                     // Step 3: Further filter the cards as needed
-                    legalCards = distinctMtgCards
+                    List<MtgCardDto> legalCards = distinctMtgCards
                         .Where(card => !cardsAlreadyInDeck.Contains(card.Name))
                         .ToList();
 
@@ -105,11 +161,35 @@ namespace MtgCustomDecksBuilder.Server.Controllers
                         legalCards = legalCards
                             .Where(criteria.Homebrew.IsCardLegal)
                             .ToList();
+
+                    legalCards.AddRange(criteria.MtgCards);
+
+                    foreach (var included in almostIncludedList)
+                    {
+                        // Check if all cards in Uses are in legalCards
+                        if (included.Uses != null && included.Uses.All(use => legalCards.Any(card => card.Name == use.Card.Name)))
+                        {
+                            // Create a list of MtgCardDto for this Included object
+                            var cardList = included.Uses
+                                .Select(use => legalCards.First(card => card.Name == use.Card.Name))
+                                .ToList();
+
+                            returnData.Add(new ComboDto()
+                            {
+                                IncludeId = included.Id,
+                                Cards = cardList
+                            });
+                        }
+                    }
+
+                    returnData = returnData.OrderBy(combo => combo.Cards.Count)
+                                            .ToList();
                 }
             }
 
-            return Ok(legalCards);
+            return Ok(returnData);
         }
+
         static HttpClient AddSpellbookHeaders(HttpClient client)
         {
             client.DefaultRequestHeaders.Add("accept", "application/json");

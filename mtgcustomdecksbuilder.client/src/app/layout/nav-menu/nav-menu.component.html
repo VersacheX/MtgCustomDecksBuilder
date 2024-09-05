@@ -81,11 +81,17 @@
         <i class="fa fa-align-justify"></i>
         <span class="col-auto">Decks</span>
       </a>
-      <ul class="collapse list-unstyled" id="decksSubmenu">
+      <ul class="collapse list-unstyled" id="decksSubmenu">        
         <li>
-          <a class="nav-link" [routerLink]="['/deck-builder']">
+          <a class="nav-link" [routerLink]="['/deck-list']">
             <i class="fa fa-align-justify"></i>
             <span class="col-auto">My Decks</span>
+          </a>
+        </li>
+        <li>
+          <a class="nav-link" [routerLink]="['/deck-builder']">
+            <i class="fa fa-align-r"></i>
+            <span class="col-auto">Deck</span>
           </a>
         </li>
       </ul>

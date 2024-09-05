@@ -413,13 +413,9 @@ namespace Persistence.Schema
 
                 entity.ToTable("UserDeckCard");
 
-                entity.Property(e => e.UserDeckCardPk)
-                    .ValueGeneratedNever()
-                    .HasColumnName("UserDeckCardPK");
+                entity.Property(e => e.UserDeckCardPk).HasColumnName("UserDeckCardPK");
 
-                entity.Property(e => e.DeckLocationFk)
-                    .ValueGeneratedOnAdd()
-                    .HasColumnName("DeckLocationFK");
+                entity.Property(e => e.DeckLocationFk).HasColumnName("DeckLocationFK");
 
                 entity.Property(e => e.MtgCardFk).HasColumnName("MtgCardFK");
 

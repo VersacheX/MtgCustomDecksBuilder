@@ -1,62 +1,73 @@
-<h1 id="tableLabel">Mtg Cards</h1>
-
-<table class="table" style="max-width:650px;">
-  <tr>
-    <td style="vertical-align: top;">
-      <table class="table">
-        <tr>
-          <td>
-            <label for="cardNameText" class="form-label">Card Name</label>
-            <input id="cardNameText" class="form-control" type="text" [(ngModel)]="searchCriteria.Name" />
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <label for="setTypeSelect" class="form-label">Set Type</label>
-            <select id="setTypeSelect" class="form-control" [(ngModel)]="searchCriteria.SetType">
-              <option [ngValue]="undefined">Any</option>
-              <option *ngFor="let setType of setTypes" [ngValue]="setType.name">{{setType.Name}}</option>
-            </select>
-          </td>
-        </tr>
-      </table>
-    </td>
-    <td style="vertical-align: top;">
-      <label for="fromSetSelect" class="form-label">Set Range</label>
-      <select id="fromSetSelect" class="form-control" (change)="SetsFromChanged()" [(ngModel)]="searchCriteria.SetFromDate">
-        <option [ngValue]="undefined">Any</option>
-        <option *ngFor="let set of fromSetData" [ngValue]="set.releaseDate">{{set.Name}} - {{set.ReleaseDate|date:'yyyy-MM-dd'}}</option>
-      </select>
-      <select id="toSetSelect" class="form-control" (change)="SetsToChanged()" [(ngModel)]="searchCriteria.SetToDate">
-        <option [ngValue]="undefined">Any</option>
-        <option *ngFor="let set of toSetData" [ngValue]="set.ReleaseDate">{{set.Name}} - {{set.ReleaseDate|date:'yyyy-MM-dd'}}</option>
-      </select>
-    </td>
-  </tr>
-  <tr>
-    <td align="right">
-      <button type="button" class="btn btn-outline-secondary" (click)="LoadDataGridsData()">Search</button>
-    </td>    
-  </tr>
-</table>
-
-<p *ngIf="!mtgCards"><em>Loading...</em></p>
-<table datatable *ngIf="mtgCards" width="100%">
-  <thead>
+<h2 mat-dialog-title>Advanced Search</h2>
+<mat-dialog-content class="modal-content">
+  <table class="table" style="max-width:650px;">
     <tr>
-      <th width="25%">Name</th>
-      <th width="25%">Image</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let card of mtgCards">
-      <td width="25%">
-        {{card.Name}}<br/><br/><i>{{card.Flavor}}</i>
+      <td style="vertical-align: top;">
+        <table class="table">
+          <tr>
+            <td>
+              <label for="cardNameText" class="form-label">Card Name</label>
+              <input id="cardNameText" class="form-control" type="text" [(ngModel)]="searchCriteria.Name" />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="cardTypeText" class="form-label">Card Type</label>
+              <input id="cardTypeText" class="form-control" type="text" [(ngModel)]="searchCriteria.CardType" />
+            </td>
+          </tr>
+        </table>
       </td>
-      <td>
-        <img [(src)]="card.ImageUrl" />
+      <td style="vertical-align: top;">
+        <label for="fromSetSelect" class="form-label">Set Range</label>
+        <select id="fromSetSelect" class="form-control" (change)="SetsFromChanged()" [(ngModel)]="searchCriteria.SetFromDate">
+          <option [ngValue]="undefined">Any</option>
+          <option *ngFor="let set of fromSetData" [ngValue]="set.ReleaseDate">{{set.Name}} - {{set.ReleaseDate|date:'yyyy-MM-dd'}}</option>
+        </select>
+        <select id="toSetSelect" class="form-control" (change)="SetsToChanged()" [(ngModel)]="searchCriteria.SetToDate">
+          <option [ngValue]="undefined">Any</option>
+          <option *ngFor="let set of toSetData" [ngValue]="set.ReleaseDate">{{set.Name}} - {{set.ReleaseDate|date:'yyyy-MM-dd'}}</option>
+        </select>
+      </td>
+      <td style="vertical-align: top;">
+        <label for="setTypeSelect" class="form-label">Set Type</label>
+        <select id="setTypeSelect" class="form-control" [(ngModel)]="searchCriteria.SetType">
+          <option [ngValue]="undefined">Any</option>
+          <option *ngFor="let setType of setTypes" [ngValue]="setType.name">{{setType.Name}}</option>
+        </select>
+      </td>
+      <td style="vertical-align: top;">
+        <table class="table">
+          <tr>
+            <td>
+              <label for="cardTextText" class="form-label">Card Text</label>
+              <input id="cardTextText" class="form-control" type="text" [(ngModel)]="searchCriteria.Text" />
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <label for="ignoreText" class="form-label">Ignore Text</label>
+              <input id="ignoreText" class="form-control" type="text" [(ngModel)]="searchCriteria.IgnoreText" />
+            </td>
+          </tr>
+        </table>
       </td>
     </tr>
-  </tbody>
-
-</table>
+    <tr>
+      <td align="right">
+        <button type="button" class="btn btn-outline-secondary" (click)="SearchData()">Search</button>
+      </td>
+    </tr>
+  </table>
+  <div class="card-container" *ngIf="mtgCards">
+    <img *ngFor="let card of mtgCards"
+         [src]="card.ImageUrl"
+         [alt]="card.Name"
+         class="card-image"
+         cardImageHoverPopup [attr.data-card]="card | json"
+         (click)="selectCard(card)" />
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button mat-dialog-close>Close</button>
+</mat-dialog-actions>
