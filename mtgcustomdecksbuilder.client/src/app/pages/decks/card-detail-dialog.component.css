@@ -54,11 +54,6 @@
   align-items: flex-start;
 }
 
-.card-image {
-  max-height: 250px;
-  max-width: 100%;
-}
-
 /*.list-section {
   margin-top: 20px;
 }

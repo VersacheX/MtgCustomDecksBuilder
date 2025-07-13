@@ -32,7 +32,12 @@ namespace MtgCustomDecksBuilder.Server.Controllers
             {
                 foreach (MtgCard card in dto.MtgCardGroupLists[key])
                 {
-                    legalCards.Add(MtgCardDto.FromEntity(card));
+                    int index = dto.EdhrecCardGroupLists[key].FindIndex(x => x.ToLower() == card.Name.ToLower());
+                    string value = dto.EdhrecPercentInUserDeckLists[key][index];
+
+                    var suggestedCard = MtgCardDto.FromEntity(card, _cache);
+                    suggestedCard.EdhrecIncludeStats = value.Replace("\n", "<br/>");
+                    legalCards.Add(suggestedCard);
                 }
             }
 

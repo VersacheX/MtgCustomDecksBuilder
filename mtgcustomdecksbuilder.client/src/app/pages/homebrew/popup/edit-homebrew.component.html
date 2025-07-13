@@ -36,7 +36,7 @@
                   <label for="setTypeSelect" class="form-label">Set Type</label>
                   <select name="setTypeSelect" id="setTypeSelect" class="form-control" [(ngModel)]="searchCriteria.SetType">
                     <option [ngValue]="undefined">Any</option>
-                    <option *ngFor="let setType of setTypes" [ngValue]="setType.name">{{setType.name}}</option>
+                    <option *ngFor="let setType of setTypes" [ngValue]="setType.Name">{{setType.Name}}</option>
                   </select>
                 </td>
               </tr>
@@ -71,11 +71,11 @@
             <label for="fromSetSelect" class="form-label">Set Range</label>
             <select name="fromSetSelect" id="fromSetSelect" class="form-control" (change)="SetsFromChanged()" [(ngModel)]="searchCriteria.SetFromDate">
               <option [ngValue]="undefined">Any</option>
-              <option *ngFor="let set of fromSetData" [ngValue]="set.releaseDate">{{set.name}} - {{set.releaseDate|date:'yyyy-MM-dd'}}</option>
+              <option *ngFor="let set of fromSetData" [ngValue]="set.ReleaseDate">{{set.Name}} - {{set.ReleaseDate|date:'yyyy-MM-dd'}}</option>
             </select>
             <select name="toSetSelect" id="toSetSelect" class="form-control" (change)="SetsToChanged()" [(ngModel)]="searchCriteria.SetToDate">
               <option [ngValue]="undefined">Any</option>
-              <option *ngFor="let set of toSetData" [ngValue]="set.releaseDate">{{set.name}} - {{set.releaseDate|date:'yyyy-MM-dd'}}</option>
+              <option *ngFor="let set of toSetData" [ngValue]="set.ReleaseDate">{{set.Name}} - {{set.ReleaseDate|date:'yyyy-MM-dd'}}</option>
             </select>
             <label for="sideboardCountText" class="form-label">Sideboard Size</label>
             <input name="sideboardCountText"
@@ -88,7 +88,7 @@
             <label for="legalitySelect" class="form-label">Legality</label>
             <select name="legalitySelect" id="legalitySelect" class="form-control" [(ngModel)]="searchCriteria.Legality" (change)="legalitySelect_Changed()">
               <option [ngValue]="undefined">Any</option>
-              <option *ngFor="let gameType of gameFormats" [ngValue]="gameType.name">{{gameType.name}}</option>
+              <option *ngFor="let gameType of gameFormats" [ngValue]="gameType.Name">{{gameType.Name}}</option>
             </select>
 
 
@@ -145,25 +145,25 @@
       <tbody>
         <tr *ngFor="let set of mtgSetsSearchResults">
           <td width="25%">
-            {{set.name}}
+            {{set.Name}}
           </td>
           <td width="25%">
-            {{set.expansion}}
+            {{set.Expansion}}
           </td>
           <td width="25%">
-            {{set.code}}
+            {{set.Code}}
           </td>
           <td width="25%">
-            {{set.block}}
+            {{set.Block}}
           </td>
           <td width="25%">
-            {{set.type}}
+            {{set.Type}}
           </td>
           <td width="25%">
-            {{set.onlineOnly}}
+            {{set.OnlineOnly}}
           </td>
           <td width="25%">
-            {{set.releaseDate|date:'yyyy-MM-dd'}}
+            {{set.ReleaseDate|date:'yyyy-MM-dd'}}
           </td>
         </tr>
       </tbody>

@@ -1,9 +1,13 @@
+using BObj;
 using BObj.Dto;
+using BObj.Scryfall;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using MtgCustomDecksBuilder.Server.Tools;
 using Persistence.Schema;
+using System.IO.Compression;
 
 namespace MtgCustomDecksBuilder.Server.Controllers
 {
@@ -14,11 +18,13 @@ namespace MtgCustomDecksBuilder.Server.Controllers
     {
         private readonly MtgCustomDecksBuilderContext _masterContext;
         private readonly IMemoryCache _cache;
+        private readonly ImageProcessor _imageProcessor;
 
-        public DecksController(MtgCustomDecksBuilderContext masterContext, IMemoryCache cache)
+        public DecksController(MtgCustomDecksBuilderContext masterContext, IMemoryCache cache, ImageProcessor imageProcessor)
         {
             _masterContext = masterContext;
             _cache = cache;
+            _imageProcessor = imageProcessor;
         }
 
         [HttpPost]
@@ -27,6 +33,90 @@ namespace MtgCustomDecksBuilder.Server.Controllers
             List<UserDeck> decks = await _masterContext.UserDecks.ToListAsync();
 
             return Ok(decks);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetDeckImagesZip(int id)
+        {
+            // Retrieve the deck from the database
+            UserDeck deck = await _masterContext.UserDecks
+                                        .Include(deck => deck.UserDeckCards)
+                                        .FirstOrDefaultAsync(x => x.UserDeckPk == id);
+
+            if (deck == null)
+            {
+                return BadRequest("Somebody jacked your deck");
+            }
+
+            UserDeckDto userDeck = UserDeckDto.FromEntity(deck);
+
+            // Retrieve cached data
+            if (!_cache.TryGetValue("MtgCardsCache", out List<MtgCard> cachedMtgCards))
+            {
+                return BadRequest("Cache not found");
+            }
+
+            List<MtgCardDto> deckList = deck.UserDeckCards
+                    .Join(
+                        cachedMtgCards,
+                        userDeckCard => userDeckCard.MtgCardFk,
+                        cachedCard => cachedCard.MtgCardPk,
+                        (userDeckCard, cachedCard) => MtgCardDto.FromEntity(cachedCard, _cache)
+                    )
+                    .ToList();
+
+
+            var mtgCards = deckList.Select(dto => new MtgCard
+            {
+                //Id = dto.Id,
+                Name = dto.Name,
+                ImageUrl = dto.ImageUrl,
+                MultiverseId = dto.MultiverseId
+            }).ToList();
+
+            await _imageProcessor.ProcessImagesAsync(mtgCards);
+
+            // Create a zip file
+            string zipPath = Path.Combine(Path.GetTempPath(), $"deck_{id}.zip");
+            if (System.IO.File.Exists(zipPath))
+                System.IO.File.Delete(zipPath);
+            using (var zip = ZipFile.Open(zipPath, ZipArchiveMode.Update))
+            {
+                foreach (var card in mtgCards)
+                {
+                    if (!string.IsNullOrEmpty(card.ImageUrl))
+                    {
+                        string multiverseId = _imageProcessor.ExtractMultiverseId(card.ImageUrl);
+                        string baseFileName = $"mv_{multiverseId}.png";
+                        string imagePath = $@"C:\temp\downloadedImage\{baseFileName}";
+
+                        if (System.IO.File.Exists(imagePath))
+                        {
+                            string entryName = baseFileName;
+                            int index = 0;
+
+                            try
+                            {
+                                // Check if the entry already exists in the zip
+                                while (zip.GetEntry(entryName) != null)
+                                {
+                                    entryName = $"mv_{multiverseId}({index}).png";
+                                    index++;
+                                }
+
+                                zip.CreateEntryFromFile(imagePath, entryName);
+                            }
+                            catch (Exception ex)
+                            {
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Return the zip file
+            var zipBytes = await System.IO.File.ReadAllBytesAsync(zipPath);
+            return File(zipBytes, "application/zip", $"deck_{id}.zip");
         }
 
         [HttpGet("{id}")]
@@ -50,7 +140,7 @@ namespace MtgCustomDecksBuilder.Server.Controllers
 
             List<MtgCardDto>? deckList = cachedMtgCards
                                 .Where(card => deck.UserDeckCards.Any(dc => dc.MtgCardFk == card.MtgCardPk))
-                                .Select(MtgCardDto.FromEntity)
+                                .Select(x=> MtgCardDto.FromEntity(x, _cache))
                                 .ToList();
 
             List<int?> commanderIds = new List<int?>();
@@ -88,6 +178,29 @@ namespace MtgCustomDecksBuilder.Server.Controllers
                 }
                 
             }
+
+            //// Retrieve cached data
+            //if (_cache.TryGetValue("CardData", out List<ScryfallCardDto> cachedScryfallCards))
+            //{
+            //    foreach (MtgCardDto card in deckList)
+            //    {
+            //        ScryfallCardDto[] possibleCards = cachedScryfallCards.Where(x => x.Name.ToLower() == card.Name.ToLower() && x.Set.ToLower() == card.Set.ToLower()).ToArray();
+
+            //        if(possibleCards.Length == 1) {
+            //            if (possibleCards[0]?.Prices?.Usd != null)                        
+            //                card.TcgPlayerMarketValue = decimal.Parse(possibleCards[0].Prices.Usd);
+            //        }
+            //        else if(possibleCards.Length > 1)
+            //        {
+            //            ScryfallCardDto scryfallCard = possibleCards.Where(x => x.Artist == card.Artist).FirstOrDefault();
+            //            if(scryfallCard?.Prices?.Usd != null)
+            //            {
+            //                card.TcgPlayerMarketValue = decimal.Parse(scryfallCard.Prices.Usd);
+            //            }
+
+            //        }
+            //    }
+            //}
 
             userDeck.Commander1 = commanders[0];
             userDeck.Commander2 = commanders[1];
@@ -140,7 +253,7 @@ namespace MtgCustomDecksBuilder.Server.Controllers
                         if (card == null)
                             continue;
 
-                        var mtgCardDto = MtgCardDto.FromEntity(card);
+                        var mtgCardDto = MtgCardDto.FromEntity(card, _cache);
 
                         int cardCount = int.Parse(countString);
                         for (int i = 0; i < cardCount; i++)

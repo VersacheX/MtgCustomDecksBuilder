@@ -19,7 +19,11 @@
       </select>
     </td>
     <td style="text-align: right; vertical-align: bottom;">
-      <a (click)="toggleImportTable()">[Import]</a>
+      <div class="button-group">
+        <a (click)="toggleImportTable()">[Import]</a>
+        <a (click)="toggleExportTable()">[Export]</a>
+        <a (click)="ripDeckImages()">[Rip]</a>
+      </div>
       <div *ngIf="showImportTable" class="popup">
         <table class="table" style="max-width:650px; min-width: 450px;">
           <tr>
@@ -35,7 +39,17 @@
           </tr>
         </table>
       </div>
-      <button (click)="Save()">Save</button>
+      <div *ngIf="showExportTable" class="popup">
+        <table class="table" style="max-width:650px; min-width: 450px;">
+          <tr>
+            <td style="vertical-align: top;">
+              <label for="exportListTextArea" class="form-label">Export List</label>
+              <textarea id="exportListTextArea" class="form-control" rows="10">{{exportedData}}</textarea>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <button type="button" class="btn btn-outline-success" (click)="Save()">Save</button>
     </td>
   </tr>
 </table>
@@ -97,6 +111,12 @@
               <td mat-cell *matCellDef="let card" class="mana-cost" [innerHTML]="card.ManaCost | manaFont"></td>
             </ng-container>
 
+            <!-- Value Column -->
+            <ng-container matColumnDef="value" width="15px">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header style="text-align: center;">Value</th>
+              <td mat-cell *matCellDef="let card" class="card-value" [innerHTML]="card.TcgPlayerMarketValue | currency"></td>
+            </ng-container>
+
             <!-- Actions Column -->
             <ng-container matColumnDef="actions">
               <th mat-header-cell *matHeaderCellDef width="10%"> </th>
@@ -113,8 +133,8 @@
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <!--<ng-container *ngFor="let card of dataSources[type]">
-              <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{'hidden-row': card.Name === selectedCommander?.Name || card.Name === selectedCommander2?.Name}"></tr>
-            </ng-container>-->
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{'hidden-row': card.Name === selectedCommander?.Name || card.Name === selectedCommander2?.Name}"></tr>
+  </ng-container>-->
 
             <tr mat-row *matRowDef="let row; columns: displayedColumns;" [ngClass]="{'hidden-row': row.Name === selectedCommander?.Name || row.Name === selectedCommander2?.Name}"></tr>
           </table>

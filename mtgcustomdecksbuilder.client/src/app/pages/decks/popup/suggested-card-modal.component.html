@@ -1,12 +1,33 @@
 <h2 mat-dialog-title>Suggested Cards</h2>
 <mat-dialog-content class="modal-content">
+  <table style="width:100%; height: 100%">
+    <ng-container *ngFor="let type of typeOrder">
+      <ng-container *ngIf="orderedGroups && orderedGroups[type]">
+        <tr>
+          <td style="text-align:center;">
+            <h2><strong>{{ type | titlecase }}&nbsp;({{orderedGroups[type].length}})</strong></h2>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="card-container">
+              <div style="text-align: center;" *ngFor="let card of orderedGroups[type]">
+                <img [src]="card.ImageUrl"
+                     [alt]="card.Name"
+                     class="card-image"
+                     cardImageHoverPopup [attr.data-card]="card | json"
+                     (click)="selectCard(card)" /><br/>
+                <div style="font-size: 8px; line-height: 8px;"[innerHTML]="card.EdhrecIncludeStats"></div>
+              </div>
+
+            </div>
+          </td>
+        </tr>
+      </ng-container>
+    </ng-container>
+    <tr></tr>
+  </table>
   <div class="card-container">
-    <img *ngFor="let card of data.cards"
-         [src]="card.ImageUrl"
-         [alt]="card.Name"
-         class="card-image"
-         cardImageHoverPopup [attr.data-card]="card | json"
-         (click)="selectCard(card)" />
   </div>
 </mat-dialog-content>
 <mat-dialog-actions>

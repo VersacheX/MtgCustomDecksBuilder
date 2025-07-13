@@ -11,10 +11,14 @@ using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Microsoft.Extensions.Caching.Memory;
+using MtgCustomDecksBuilder.Server.Tools;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<BulkDataLoaderService>();
+builder.Services.AddTransient<ImageProcessor>();
 
 var allowSpecificOrigins = "_allowClientOrigin";
 builder.Services.AddCors(options =>
@@ -139,6 +143,16 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 var app = builder.Build();
 
+// Load bulk data into cache in a scoped service
+Task.Run(async () =>
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var bulkDataLoader = scope.ServiceProvider.GetRequiredService<BulkDataLoaderService>();
+        await bulkDataLoader.LoadBulkDataAsync();
+    }
+});
+
 using (var scope = app.Services.CreateScope())
 {
     var masterContext = scope.ServiceProvider.GetRequiredService<MtgCustomDecksBuilderContext>();
@@ -151,6 +165,10 @@ using (var scope = app.Services.CreateScope())
         .ToList();
 
     cache.Set("MtgCardsCache", mtgCards);
+
+    var imageProcessor = scope.ServiceProvider.GetRequiredService<ImageProcessor>();
+    //START THIS WITH CORRECT DIMENSIONS
+    //imageProcessor.ProcessImages();
 }
 
 app.MapIdentityApi<MyUser>();

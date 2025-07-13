@@ -36,7 +36,10 @@ export class DeckBuilderComponent extends DetailComponent implements OnInit {
   public orderedGroups: Record<string, any[]>;
 
   public showImportTable: boolean = false;
-  public displayedColumns: string[] = ['name', 'set', 'manaCost', 'actions'];
+  public showExportTable: boolean = false;
+  public exportedData: string = '';
+
+  public displayedColumns: string[] = ['name', 'set', 'manaCost', 'value', 'actions'];
   public typeOrder = [
     'battle', 'planeswalker', 'creature', 'sorcery', 'instant',
     'artifact', 'enchantment', 'land'
@@ -264,6 +267,10 @@ export class DeckBuilderComponent extends DetailComponent implements OnInit {
     });
   }
 
+  GetEdhrecCards() {
+    return this.http.post<any[]>(this.baseUrl + 'edhrec/GetSuggestedCardsByCriteria', { "CommanderName": this.selectedCommander.Name, "CommanderName2": this.selectedCommander2?.Name, "Homebrew": this.selectedHomebrew, "MtgCards": this.rawMtgCardData });
+  }
+
   openSuggestedCardModal(cards: any[]) {
     const dialogRef = this.dialog.open(SuggestedCardModalComponent, {
       width: '80vw',
@@ -274,10 +281,6 @@ export class DeckBuilderComponent extends DetailComponent implements OnInit {
     instance.cardSelected.subscribe((selectedCard: any) => {
       this.handleSelectedCard(selectedCard);
     });
-  }
-
-  GetEdhrecCards() {
-    return this.http.post<any[]>(this.baseUrl + 'edhrec/GetSuggestedCardsByCriteria', { "CommanderName": this.selectedCommander.Name, "CommanderName2": this.selectedCommander2?.Name, "Homebrew": this.selectedHomebrew, "MtgCards": this.rawMtgCardData });
   }
 
   showExistingCombos() {
@@ -358,6 +361,43 @@ export class DeckBuilderComponent extends DetailComponent implements OnInit {
 
   toggleImportTable() {
     this.showImportTable = !this.showImportTable;
+  }
+
+  toggleExportTable() {
+    this.showExportTable = !this.showExportTable;
+    if (this.showExportTable) {
+      this.exportedData = this.generateExportData();
+    }
+  }
+
+  generateExportData(): string {
+    // Assuming rawMtgCardData is populated
+    return this.rawMtgCardData.map(card => this.createOriginalString(card)).join('\n');
+  }
+
+  createOriginalString(card: any): string {
+    // Assuming you have a way to get the count for each card
+    let count = this.getCountForCard(card);
+    return `${count} ${card.Name} (${card.Set}) ${card.Number}`;
+  }
+
+  getCountForCard(card: any): number {
+    // Implement your logic to get the count for the card
+    return 1; // Example
+  }
+
+  ripDeckImages() {
+    this.http.get(this.baseUrl + 'decks/GetDeckImagesZip/' + this.BusinessObjectId, { responseType: 'blob' })
+      .subscribe((response: Blob) => {
+        const url = window.URL.createObjectURL(response);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `deck_${this.BusinessObjectId}.zip`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }, error => {
+        console.error('Error downloading the zip file', error);
+      });
   }
 
   override ValidateSaveData() {

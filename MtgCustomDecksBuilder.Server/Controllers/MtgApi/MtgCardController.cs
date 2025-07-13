@@ -80,7 +80,7 @@ namespace MtgCustomDecksBuilder.Server.Controllers
                 .Select(x => x.FirstOrDefault())
                 .Distinct()
                 .Take(5000)
-                .Select(MtgCardDto.FromEntity)
+                .Select(x => MtgCardDto.FromEntity(x, _cache))
                 .ToList();
             }
             catch (Exception ex)
@@ -159,7 +159,68 @@ namespace MtgCustomDecksBuilder.Server.Controllers
                 }
             }
 
+            if (!string.IsNullOrWhiteSpace(criteria.CardSubType))
+            {
+                var textQueries = Regex.Matches(criteria.CardSubType, @"[\""].+?[\""]|[^ ]+")
+                                       .Cast<Match>()
+                                       .Select(m => m.Value.Replace("\"", "").ToLower())
+                                       .ToArray();
+
+                foreach (var query in textQueries)
+                {
+                    predicate = predicate.And(x => x.SubTypes != null && x.SubTypes.ToLower().Contains(query));
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(criteria.Color))
+            {
+                var textQueries = criteria.Color.Split(" ");
+
+                foreach (var query in textQueries)
+                {
+                    predicate = predicate.And(x => x.ColorIdentity != null && x.ColorIdentity.ToLower().Contains(GetColorCode(query)));
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(criteria.IgnoreColor))
+            {
+                var textQueries = criteria.IgnoreColor.Split(" ");
+
+                foreach (var query in textQueries)
+                {
+                    predicate = predicate.And(x => string.IsNullOrWhiteSpace(x.ColorIdentity) || (x.ColorIdentity != null && !x.ColorIdentity.ToLower().Contains(GetColorCode(query))));
+                }
+            }
+
             return predicate;
+        }
+
+        private static string GetColorCode(string value)
+        {
+            switch (value.ToLower())
+            {
+                case "r":
+                case "red":
+                case "{r}":
+                    return "r";
+                case "g":
+                case "green":
+                case "{g}":
+                    return "g";
+                case "b":
+                case "black":
+                case "{b}":
+                    return "b";
+                case "w":
+                case "white":
+                case "{w}":
+                    return "w";
+                case "u":
+                case "blue":
+                case "{u}":
+                    return "u";
+            }
+            return "";
         }
 
         [HttpPost]
@@ -226,7 +287,7 @@ namespace MtgCustomDecksBuilder.Server.Controllers
                     .GroupBy(card => card.Name)
                     .Select(group => group.First())
                     .Take(25)
-                    .Select(MtgCardDto.FromEntity)
+                    .Select(x => MtgCardDto.FromEntity(x, _cache))
                     .ToList();
 
             }
@@ -265,7 +326,10 @@ namespace MtgCustomDecksBuilder.Server.Controllers
         public string? Name { get; set; }
         public string? Text { get; set; }
         public string? CardType { get; set; }
+        public string? CardSubType { get; set; }
         public string? IgnoreText { get; set; }
+        public string? Color { get; set; }
+        public string? IgnoreColor { get; set; }
         public string? SetCode { get; set; }
         public string? SetType { get; set; }
         public string[]? ColorIdentity { get; set; }

@@ -32,7 +32,7 @@ namespace MtgCustomDecksBuilder.Server.Controllers
         public async Task<IActionResult> GetIncludedCombos(SpellbookSearchCriteria criteria)
         {
             List<ComboDto> resultList = new List<ComboDto>();
-            string[] cardsAlreadyInDeck = criteria.MtgCards.Select(x => x.Name).ToArray();
+            var cardsAlreadyInDeck = criteria.MtgCards.Select(x => new { card = x.Name, quantity = 1 }).ToArray();
 
             using (var client = new HttpClient())
             {
@@ -40,7 +40,7 @@ namespace MtgCustomDecksBuilder.Server.Controllers
 
                 var jsonData = new
                 {
-                    commanders = new string[] { },
+                    commanders = new object[] { },
                     main = cardsAlreadyInDeck
                 };
                 string jsonString = JsonSerializer.Serialize(jsonData);
@@ -82,7 +82,7 @@ namespace MtgCustomDecksBuilder.Server.Controllers
                                                 Cards = cachedMtgCards
                                                     .Where(card => include.Uses.Any(use => use.Card.Name == card.Name))
                                                     .GroupBy(card => card.Name)
-                                                    .Select(group => MtgCardDto.FromEntity(group.First()))
+                                                    .Select(group => MtgCardDto.FromEntity(group.First(), _cache))
                                                     .ToList()
                                             }).OrderBy(combo => combo.Cards.Count)
                                             .ToList();
@@ -98,7 +98,8 @@ namespace MtgCustomDecksBuilder.Server.Controllers
         public async Task<IActionResult> GetSuggestedCardsByCriteria(SpellbookSearchCriteria criteria)
         {
             List<ComboDto> returnData = new List<ComboDto>();
-            string[] cardsAlreadyInDeck = criteria.MtgCards.Select(x=>x.Name).ToArray();
+            var cardsAlreadyInDeck = criteria.MtgCards.Select(x => new { card = x.Name, quantity = 1 }).ToArray();
+            var cardNamesInDeck = cardsAlreadyInDeck.Select(x => x.card).ToList();
 
             using (var client = new HttpClient())
             {
@@ -106,7 +107,7 @@ namespace MtgCustomDecksBuilder.Server.Controllers
 
                 var jsonData = new
                 {
-                    commanders = new string[] { },
+                    commanders = new object[] { },
                     main = cardsAlreadyInDeck
                 };
                 string jsonString = JsonSerializer.Serialize(jsonData);
@@ -148,16 +149,16 @@ namespace MtgCustomDecksBuilder.Server.Controllers
                     var distinctMtgCards = cachedMtgCards
                         .Where(card => almostIncludedCardNames.Contains(card.Name))
                         .GroupBy(card => card.Name)
-                        .Select(group => MtgCardDto.FromEntity(group.First()))
+                        .Select(group => MtgCardDto.FromEntity(group.First(), _cache))
                         .ToList();
 
 
                     // Step 3: Further filter the cards as needed
                     List<MtgCardDto> legalCards = distinctMtgCards
-                        .Where(card => !cardsAlreadyInDeck.Contains(card.Name))
+                        .Where(card => !cardNamesInDeck.Contains(card.Name))
                         .ToList();
 
-                    if(criteria.Homebrew != null)
+                    if (criteria.Homebrew != null)
                         legalCards = legalCards
                             .Where(criteria.Homebrew.IsCardLegal)
                             .ToList();

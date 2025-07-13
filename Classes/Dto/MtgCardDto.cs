@@ -1,4 +1,6 @@
-﻿using Persistence.Schema;
+﻿using BObj.Scryfall;
+using Microsoft.Extensions.Caching.Memory;
+using Persistence.Schema;
 
 namespace BObj.Dto
 {
@@ -45,7 +47,12 @@ namespace BObj.Dto
         public ICollection<MtgCardLegalityDto>? MtgCardLegalities { get; set; }
         public ICollection<MtgCardSetDto>? MtgCardSets { get; set; }
 
-        public static MtgCardDto FromEntity(MtgCard card)
+        public string? EdhrecIncludeStats { get; set; }
+        public decimal? TcgPlayerMarketValue { get; set; }
+
+        public string? MtgCardId { get; set; }
+
+        public static MtgCardDto FromEntity(MtgCard card, IMemoryCache cache)
         {
             return new MtgCardDto
             {
@@ -87,6 +94,8 @@ namespace BObj.Dto
                 Type = card.Type,
                 Types = card.Types,
                 Watermark = card.Watermark,
+                MtgCardId = card.Id,
+                TcgPlayerMarketValue = SetTcgPlayerMarketValue(card, cache),
                 MtgCardLegalities = card.MtgCardLegalities.Select(legality => new MtgCardLegalityDto
                 {
                     Id = legality.MtgCardLegalityPk,
@@ -101,6 +110,32 @@ namespace BObj.Dto
                     MtgSetFk = set.MtgSetFk
                 }).ToList()
             };
+        }
+        
+        private static decimal? SetTcgPlayerMarketValue(MtgCard card, IMemoryCache cache)
+        {
+            decimal? resVal = null;
+            if (cache.TryGetValue("CardData", out List<ScryfallCardDto> cachedScryfallCards))
+            {
+                ScryfallCardDto[] possibleCards = cachedScryfallCards.Where(x => x.Name.ToLower() == card.Name.ToLower() && x.Set.ToLower() == card.Set.ToLower()).ToArray();
+
+                if (possibleCards.Length == 1)
+                {
+                    if (possibleCards[0]?.Prices?.Usd != null)
+                        resVal = decimal.Parse(possibleCards[0].Prices.Usd);
+                }
+                else if (possibleCards.Length > 1)
+                {
+                    ScryfallCardDto scryfallCard = possibleCards.Where(x => x.Artist == card.Artist).FirstOrDefault();
+                    if (scryfallCard?.Prices?.Usd != null)
+                    {
+                        resVal = decimal.Parse(scryfallCard.Prices.Usd);
+                    }
+
+                }
+            }
+
+            return resVal;
         }
     }
 

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Persistence.Schema;
 using System.Net;
+using System.Web;
 
 namespace Bobj
 {
@@ -11,9 +12,54 @@ namespace Bobj
     {
         public static async Task<EdhrecDto> SourceEdhRecData(EdhrecSearchCriteria criteria, IMemoryCache cache)
         {
-            string commander2 = !string.IsNullOrWhiteSpace(criteria.CommanderName2) ? "-" + criteria.CommanderName2.ToLower().Replace(" ", "-").Replace(",", "") : "";
-            string url = $"https://edhrec.com/commanders/{criteria.CommanderName.ToLower().Replace(" ", "-").Replace(",", "")}{commander2}";
+            //string url = $"https://edhrec.com/commanders/{criteria.CommanderName.ToLower().Replace(" ", "-").Replace(",", "")}{commander2}";
+
+            var cardsAlreadyInDeck = criteria.MtgCards?.Select(x => x.Name).ToArray() ?? Array.Empty<string>();
+            string commander = criteria.CommanderName.ToLower();
+            if (commander.Contains(" // "))
+                commander = commander.Substring(0, commander.IndexOf(" // "));
+
+
+            string commander2 = string.Empty;
+            if (!string.IsNullOrWhiteSpace(criteria.CommanderName2))
+            {
+                commander2 = criteria.CommanderName2.ToLower();
+                if (commander2.Contains(" // "))
+                    commander2 = commander2.Substring(0, commander2.IndexOf(" // "));
+
+                commander2 = commander2.Replace(" ", "-").Replace(",", "");
+            }
+
+
+            // Base URL and fixed parts
+            var baseUrl = $"https://edhrec.com/commanders/{commander.ToLower().Replace(" ", "-").Replace(",", "")}{commander2}";
+
+
+            //var queryPrefix = "?f=in%3D";
+            //var maxUrlLength = 2048; // Adjust this based on your needs
+
+            //// Calculate the remaining length available for card names
+            //var remainingLength = maxUrlLength - baseUrl.Length - queryPrefix.Length;
+
+            //// Initialize the query parameter
+            //var queryParameter = queryPrefix;
+            //foreach (var card in cardsAlreadyInDeck)
+            //{
+            //    var encodedCard = HttpUtility.UrlEncode(card);
+            //    var potentialQuery = queryParameter + (queryParameter == queryPrefix ? "" : ";in%3D") + encodedCard;
+
+            //    if (baseUrl.Length + potentialQuery.Length > maxUrlLength)
+            //    {
+            //        break; // Stop adding cards if the maximum length is exceeded
+            //    }
+
+            //    queryParameter = potentialQuery;
+            //}
+
+
+
             string[] nodeIds = EdhrecDto.EDHREC_NODE_IDS;
+            var url = baseUrl;// + queryParameter;
 
             using (HttpClient client = new HttpClient())
             {
@@ -32,9 +78,10 @@ namespace Bobj
                     ExtractCardNames(document, nodeIds, dto);
 
                     var almostIncludedCardNames = dto.EdhrecCardGroupLists.SelectMany(group => group.Value).Distinct().ToList();
-                    var cardsAlreadyInDeck = criteria.MtgCards?.Select(x => x.Name).ToArray() ?? Array.Empty<string>();
+                    cardsAlreadyInDeck = criteria.MtgCards?.Select(x => x.Name).ToArray() ?? Array.Empty<string>();
 
-                    return PopulateMtgCardLists(dto, cache, criteria.Homebrew, almostIncludedCardNames, cardsAlreadyInDeck);
+                    var resValue = PopulateMtgCardLists(dto, cache, criteria.Homebrew, almostIncludedCardNames, cardsAlreadyInDeck);
+                    return resValue;
 
                 }
                 catch (HttpRequestException e)
@@ -69,6 +116,22 @@ namespace Bobj
                             dto.EdhrecCardGroupLists[nodeId].Add(decodedCardName);
                         }
                     }
+
+                    var usageNodes = node.SelectNodes(".//div[@class='CardLabel_label__iAM7T']");
+                    if (usageNodes != null)
+                    {
+                        if (dto.EdhrecPercentInUserDeckLists == null)
+                            dto.EdhrecPercentInUserDeckLists = new Dictionary<string, List<string>>();
+
+                        foreach (var usageNode in usageNodes)
+                        {
+                            string usageText = WebUtility.HtmlDecode(usageNode.InnerText);
+                            if (!dto.EdhrecPercentInUserDeckLists.ContainsKey(nodeId))                            
+                                dto.EdhrecPercentInUserDeckLists[nodeId] = new List<string>();
+
+                            dto.EdhrecPercentInUserDeckLists[nodeId].Add(usageText);
+                        }
+                    }
                 }
             }
         }
@@ -89,10 +152,6 @@ namespace Bobj
             foreach (var group in dto.EdhrecCardGroupLists)
             {
                 var mtgCardList = cachedMtgCards
-                    //_masterContext.MtgCards
-                    //.Include(card => card.MtgCardLegalities)
-                    //.Include(card => card.MtgCardSets)
-                    //    .ThenInclude(cardSet => cardSet.MtgSetFkNavigation)
                     .Where(card => group.Value.Contains(card.Name) && almostIncludedCardNames.Contains(card.Name))
                     .GroupBy(card => card.Name)
                     .Select(group => group.First())
@@ -115,7 +174,7 @@ namespace Bobj
             }
 
             var homebrewDto = HomebrewDto.FromEntity(homebrew);
-            return homebrewDto.IsCardLegal(MtgCardDto.FromEntity(card));
+            return homebrewDto.IsCardLegal(card);
         }
 
         private static bool IsCardLegal(MtgCard card, HomebrewDto homebrew)
@@ -126,7 +185,7 @@ namespace Bobj
             }
 
             //var homebrewDto = HomebrewDto.FromEntity(homebrew);
-            return homebrew.IsCardLegal(MtgCardDto.FromEntity(card));
+            return homebrew.IsCardLegal(card);
         }
 
         private static EdhrecDto InitializeEdhrecDto()

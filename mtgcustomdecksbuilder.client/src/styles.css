@@ -72,5 +72,14 @@ a:hover {
   }
 
 html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif;/* background-color: black; color: white; */}
 
+
+
+.card-image {
+  max-height: 250px;
+  max-width: 100%;
+}
+  .card-image :hover {
+      cursor: none !important;
+  }

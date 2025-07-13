@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MtgApiManager.Lib.Core;
 using MtgApiManager.Lib.Model;
 using MtgApiManager.Lib.Service;
@@ -229,6 +230,144 @@ namespace MtgCustomDecksBuilder.Server.Controllers
 
                 if(!_masterContext.MtgCards.Any(card=>card.Name == newMtgCard.Name && card.Number == newMtgCard.Number && card.Set == newMtgCard.Set))
                     _masterContext.MtgCards.Add(newMtgCard);
+                else
+                {
+                    //UPDATE
+                    MtgCard existCard = _masterContext.MtgCards
+                                            .Include(x=>x.MtgCardVariations)
+                                            .Include(c => c.MtgCardRulings)  
+                                            .Include(c=>c.MtgCardForeignNames)
+                                            .Include(c => c.MtgCardLegalities)
+                                            .Include(c => c.MtgCardSets)
+                                                .ThenInclude(cardSet => cardSet.MtgSetFkNavigation)
+                                            .FirstOrDefault(card => card.Name == newMtgCard.Name && card.Number == newMtgCard.Number && card.Set == newMtgCard.Set);
+
+                    newMtgCard.MtgCardPk = existCard.MtgCardPk;
+                    //Here we need to check for any updates to the cards legalities and sets in order to update that
+                    if (newMtgCard.MtgCardVariations?.Count > 0)
+                    {
+                        int count = newMtgCard.MtgCardVariations.Count;
+                        var variations = newMtgCard.MtgCardVariations.ToList();
+                        for (int i = 0; i < count; i++)
+                        {
+                            MtgCardVariation variation = variations[i];
+
+                            MtgCardVariation existVariation = _masterContext.MtgCardVariations.Where(x=>x.MtgCardFk == variation.MtgCardFk && x.VariationId == variation.VariationId).FirstOrDefault();
+                            if(existVariation != null) { newMtgCard.MtgCardVariations.Remove(variation); }
+                        }
+
+                    }
+
+                    if (newMtgCard.MtgCardRulings?.Count > 0)
+                    {
+                        var newRulingKeys = newMtgCard.MtgCardRulings.Select(r => new { newMtgCard.MtgCardPk, r.Text }).ToList();
+
+                        var contextRulingsToRemove = new List<MtgCardRuling>();
+                        var existRulings = _masterContext.MtgCardRulings.Where(x => x.MtgCardFk == newMtgCard.MtgCardPk).ToList();
+                        foreach (var contextRuling in existRulings)
+                        {
+                            bool existsInNew = false;
+                            foreach (var newRulingKey in newRulingKeys)
+                            {
+                                if (contextRuling.MtgCardFk == newMtgCard.MtgCardPk && contextRuling.Text == newRulingKey.Text)
+                                {
+                                    existsInNew = true;
+                                    break;
+                                }
+                            }
+                            if (!existsInNew)
+                            {
+                                contextRulingsToRemove.Add(contextRuling);
+                            }
+                        }
+
+                        _masterContext.MtgCardRulings.RemoveRange(contextRulingsToRemove);
+
+                        var contextRulings = new List<dynamic>();
+                        existRulings = _masterContext.MtgCardRulings.Where(x => x.MtgCardFk == newMtgCard.MtgCardPk).ToList();
+                        foreach (var contextRuling in existRulings)
+                        {
+                            foreach (var newRulingKey in newRulingKeys)
+                            {
+                                if (contextRuling.MtgCardFk == newMtgCard.MtgCardPk && contextRuling.Text == newRulingKey.Text)
+                                {
+                                    contextRulings.Add(new { contextRuling.MtgCardFk, contextRuling.Text, contextRuling.MtgCardRulingPk });
+                                    break;
+                                }
+                            }
+                        }
+
+                        foreach (var ruling in newMtgCard.MtgCardRulings)
+                        {
+                            foreach (var contextRuling in contextRulings)
+                            {
+                                if (ruling.MtgCardFk == newMtgCard.MtgCardPk && ruling.Text == contextRuling.Text)
+                                {
+                                    ruling.MtgCardRulingPk = contextRuling.MtgCardRulingPk;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (newMtgCard.MtgCardLegalities?.Count > 0)
+                    {
+                        var legalityKeys = newMtgCard.MtgCardLegalities.Select(l => new { newMtgCard.MtgCardPk, l.Format }).ToList();
+
+                        foreach (var legality in newMtgCard.MtgCardLegalities)
+                        {
+                            var existingLegalities = _masterContext.MtgCardLegalities
+                                .Where(cl => cl.MtgCardFk == newMtgCard.MtgCardPk && cl.Format == legality.Format)
+                                .ToList();
+
+                            foreach (var existingLegality in existingLegalities)
+                            {
+                                if (existingLegality != null)
+                                {
+                                    legality.MtgCardLegalityPk = existingLegality.MtgCardLegalityPk;
+                                }
+                            }
+                        }
+                    }
+
+                    if (newMtgCard.MtgCardForeignNames?.Count > 0)
+                    {
+                        var foreignNameKeys = newMtgCard.MtgCardForeignNames.Select(fn => new { newMtgCard.MtgCardPk, fn.Language }).ToList();
+
+                        var existForeignNames = _masterContext.MtgCardForeignNames.Where(x => x.MtgCardFk == newMtgCard.MtgCardPk).ToList();
+                        foreach (var contextForeignName in existForeignNames)
+                        {
+                            bool existsInNew = false;
+                            foreach (var foreignNameKey in foreignNameKeys)
+                            {
+                                if (contextForeignName.MtgCardFk == newMtgCard.MtgCardPk && contextForeignName.Language == foreignNameKey.Language)
+                                {
+                                    existsInNew = true;
+                                    break;
+                                }
+                            }
+                            if (!existsInNew)
+                            {
+                                _masterContext.MtgCardForeignNames.Remove(contextForeignName);
+                            }
+                        }
+
+                        foreach (var foreignName in newMtgCard.MtgCardForeignNames)
+                        {
+                            var existingForeignNames = _masterContext.MtgCardForeignNames
+                                .Where(cfn => cfn.MtgCardFk == newMtgCard.MtgCardPk && cfn.Language == foreignName.Language)
+                                .ToList();
+
+                            foreach (var existingForeignName in existingForeignNames)
+                            {
+                                if (existingForeignName != null)
+                                {
+                                    foreignName.MtgCardForeignNamePk = existingForeignName.MtgCardForeignNamePk;
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             if (resultList.Count > 0)

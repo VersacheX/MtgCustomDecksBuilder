@@ -2,6 +2,7 @@ import { Component, EventEmitter, Inject, OnInit, Output } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ListComponent } from '../../_controls/list-component.component';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatTableDataSource } from '@angular/material/table';
 
 @Component({
   selector: 'app-search-cards',
@@ -10,6 +11,8 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 })
 export class SearchCardsComponent extends ListComponent implements OnInit {
   @Output() cardSelected = new EventEmitter<any>();
+  public orderedGroups: Record<string, any[]>;
+
   public mtgCards: any[];
   public mtgSets: any[];
 
@@ -17,9 +20,11 @@ export class SearchCardsComponent extends ListComponent implements OnInit {
   public toSetData: any[];
   public setTypes: any[];
 
-  public searchCriteria: any = {
-    CmcTo: '1,2,3,4,5,6,7,8,9,10'
-  };
+  public searchCriteria: any = {  };
+  public typeOrder = [
+    'battle', 'planeswalker', 'creature', 'sorcery', 'instant',
+    'artifact', 'enchantment', 'land'
+  ];
 
   constructor(private http: HttpClient, @Inject('BASE_URL') private baseUrl: string,
               public dialogRef: MatDialogRef<SearchCardsComponent>,
@@ -37,10 +42,15 @@ export class SearchCardsComponent extends ListComponent implements OnInit {
 
   SearchData() {
     this.http.post<any[]>(this.baseUrl + 'mtgcard/GetMtgCardsByCriteria', this.searchCriteria).subscribe(result => {
-      this.mtgCards = result;
+      this.setdeckListData(result);
 
-      console.log(this.mtgCards);
     }, error => console.error(error));
+  }
+
+  setdeckListData(data) {
+    this.mtgCards = data;
+    this.orderedGroups = this.groupAndOrderCardsByType(this.mtgCards);
+
   }
 
   override LoadControlsData() {
@@ -99,13 +109,67 @@ export class SearchCardsComponent extends ListComponent implements OnInit {
   }
 
   selectCard(card: any) {
-    this.searchCriteria.IgnoredCardList.push(card);
+    if (this.searchCriteria.IgnoredCardList)
+      this.searchCriteria.IgnoredCardList.push(card);
     const index = this.mtgCards.indexOf(card);
     if (index > -1) {
       const updatedData = this.mtgCards.slice();
       updatedData.splice(index, 1);
-      this.mtgCards = updatedData;
+      this.setdeckListData(updatedData);
       this.cardSelected.emit(card);
     }
+  }
+
+  groupAndOrderCardsByType(cards: any[]): Record<string, any[]> {
+    const groups: Record<string, any[]> = {};
+
+    // Sort cards by Cmc in descending order
+    cards.sort((a, b) => a.Cmc - b.Cmc);
+
+    cards.forEach(card => {
+      const types = card.Types.split(',').map(type => type.trim().toLowerCase());
+      let primaryType = types[0];
+
+      if (types.includes('land')) {
+        primaryType = 'land';
+      } else if (types.includes('creature')) {
+        primaryType = 'creature';
+      } else if (types.includes('artifact')) {
+        primaryType = 'artifact';
+      } else if (types.includes('battle')) {
+        primaryType = 'battle';
+      } else if (types.includes('planeswalker')) {
+        primaryType = 'planeswalker';
+      } else if (types.includes('sorcery')) {
+        primaryType = 'sorcery';
+      } else if (types.includes('instant')) {
+        primaryType = 'instant';
+      } else if (types.includes('enchantment')) {
+        primaryType = 'enchantment';
+      }
+
+      if (!groups[primaryType]) {
+        groups[primaryType] = [];
+      }
+
+      groups[primaryType].push(card);
+    });
+
+    // Sort the groups based on the specified order
+    const orderedGroups: Record<string, any[]> = {};
+    this.typeOrder.forEach(type => {
+      if (groups[type]) {
+        orderedGroups[type] = groups[type];
+      }
+    });
+
+    // Add any remaining groups that are not in the specified order
+    Object.keys(groups).forEach(type => {
+      if (!orderedGroups[type]) {
+        orderedGroups[type] = groups[type];
+      }
+    });
+
+    return orderedGroups;
   }
 }
