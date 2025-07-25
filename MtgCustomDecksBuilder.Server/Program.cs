@@ -18,6 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<BulkDataLoaderService>();
+builder.Services.AddTransient<ScryfallService>();
 builder.Services.AddTransient<ImageProcessor>();
 
 var allowSpecificOrigins = "_allowClientOrigin";
@@ -81,7 +82,7 @@ builder.Services.AddAuthentication(option =>
 //TO SCAFFOLD THIS DB USE: dotnet ef dbcontext scaffold "Data Source=DESKTOP-3K6IPDC;Initial Catalog=MtgCustomDecksBuilder;Integrated Security=True;Trust Server Certificate=True" Microsoft.EntityFrameworkCore.SqlServer -o Schema --force
 builder.Services.AddDbContext<MtgCustomDecksBuilderContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("MtgCustomDecksBuilder") ?? throw new InvalidOperationException("Connection string 'WNS_master' not found."));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("MtgCustomDecksBuilder") ?? throw new InvalidOperationException("Connection string for master context not found."));
 #if DEBUG
     options.EnableSensitiveDataLogging(); // Enable sensitive data logging
     options.EnableDetailedErrors(); // Enable detailed error messages);
@@ -143,7 +144,15 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 var app = builder.Build();
 
-// Load bulk data into cache in a scoped service
+
+// Load bulk data into cache in a scoped service -- do not w3ait     --- scryfall data
+using (var scope = app.Services.CreateScope())
+{
+    var dumpService = scope.ServiceProvider.GetRequiredService<ScryfallService>();
+    await dumpService.GetDumpAsync();
+}
+
+// Load bulk data into cache in a scoped service -- do not w3ait     --- scryfall data
 Task.Run(async () =>
 {
     using (var scope = app.Services.CreateScope())
@@ -153,6 +162,7 @@ Task.Run(async () =>
     }
 });
 
+// Load card data from db for faster control response in things like lookup dropdowns
 using (var scope = app.Services.CreateScope())
 {
     var masterContext = scope.ServiceProvider.GetRequiredService<MtgCustomDecksBuilderContext>();

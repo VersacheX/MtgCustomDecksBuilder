@@ -93,6 +93,7 @@ namespace MtgCustomDecksBuilder.Server.Controllers
             int currentCount = 0;
             int currentPage = 0;
             int pageSize = 100;
+            int totalPages = 0;
             cardService.Where(x => x.PageSize, pageSize);
 
             do
@@ -116,7 +117,8 @@ namespace MtgCustomDecksBuilder.Server.Controllers
                     currentCount = cardList.Value.Count();
                     resultList.AddRange(cardList.Value);
                 }
-            } while (currentCount == pageSize);
+                totalPages = cardList.PagingInfo.TotalPages;
+            } while (currentPage < totalPages);
 
             //Save Data Here
             foreach (ICard card in resultList)
