@@ -9,7 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 
 
-namespace MtgCustomDecksBuilder.Server.Services
+namespace MtgDeckBuilderServices
 {
     public class BulkDataLoaderService
     {

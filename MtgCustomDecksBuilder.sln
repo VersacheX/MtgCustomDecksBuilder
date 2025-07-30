@@ -9,9 +9,11 @@ Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "mtgcustomdecksbuilder.clien
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Persistence", "Persistence\Persistence.csproj", "{33F22EAF-FFC6-4F3C-B35F-529ED4FAE8CB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GodMode", "GodMode\GodMode.csproj", "{46BB9D95-0898-4B64-919D-A5140C89A733}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GodMode", "GodMode\GodMode.csproj", "{46BB9D95-0898-4B64-919D-A5140C89A733}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BObj", "Classes\BObj.csproj", "{0A726259-9FF9-40EA-BF7A-D89C02351F3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BObj", "Classes\BObj.csproj", "{0A726259-9FF9-40EA-BF7A-D89C02351F3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MtgDeckBuilderServices", "Services\MtgDeckBuilderServices.csproj", "{F008F247-CEC7-4B62-9D5D-BDE4CDE2F08B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,10 @@ Global
 		{0A726259-9FF9-40EA-BF7A-D89C02351F3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A726259-9FF9-40EA-BF7A-D89C02351F3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0A726259-9FF9-40EA-BF7A-D89C02351F3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F008F247-CEC7-4B62-9D5D-BDE4CDE2F08B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F008F247-CEC7-4B62-9D5D-BDE4CDE2F08B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F008F247-CEC7-4B62-9D5D-BDE4CDE2F08B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F008F247-CEC7-4B62-9D5D-BDE4CDE2F08B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

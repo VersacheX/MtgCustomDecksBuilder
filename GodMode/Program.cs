@@ -2,10 +2,13 @@
 using BObj.Dto;
 using BObj.External;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MtgDeckBuilderServices;
 using Persistence.Schema;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
@@ -41,12 +44,20 @@ namespace God
 
             using var scope = host.Services.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<MtgCustomDecksBuilderContext>();
+            var httpClientFactory = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
+            var memoryCache = scope.ServiceProvider.GetRequiredService<IMemoryCache>();
             #endregion
 
-            var admin = dbContext.Users.FirstOrDefault();
-                admin.Password = ComputeSha256Hash(admin.Password, "EXAMPLE_SALT_DO_NOT_USE_IN_PROD");
+            // Instantiate the loader and run it
+            var loader = new BulkDataLoaderService(memoryCache, httpClientFactory, dbContext);
+            await loader.LoadBulkDataAsync();
 
-            dbContext.SaveChanges();
+
+
+            //var admin = dbContext.Users.FirstOrDefault();
+            //    admin.Password = ComputeSha256Hash(admin.Password, "EXAMPLE_SALT_DO_NOT_USE_IN_PROD");
+
+            //dbContext.SaveChanges();
 
             //var deckRuleCriterion = dbContext.DeckRuleCriteria
             //    .Include(d => d.GameFormatFkNavigation)
@@ -74,6 +85,7 @@ namespace God
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((context, services) =>
                 {
+                    // Register EF Core DbContext
                     services.AddDbContext<MtgCustomDecksBuilderContext>(options =>
                     {
                         options.UseSqlServer("Data Source=DESKTOP-3K6IPDC;Initial Catalog=MtgCustomDecksBuilder;Integrated Security=True;Trust Server Certificate=True");
@@ -82,6 +94,16 @@ namespace God
                         //options.EnableDetailedErrors(); // Enable detailed error messages
 #endif
                     });
+
+                    // Register HttpClientFactory
+                    services.AddHttpClient();
+
+                    // Register in-memory cache
+                    services.AddMemoryCache();
+
+                    // Register your BulkDataLoaderService for later DI use
+                    services.AddTransient<BulkDataLoaderService>();
                 });
+
     }
 }

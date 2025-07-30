@@ -27,7 +27,7 @@ namespace Bobj
                 if (commander2.Contains(" // "))
                     commander2 = commander2.Substring(0, commander2.IndexOf(" // "));
 
-                commander2 = commander2.Replace(" ", "-").Replace(",", "");
+                commander2 = "-" + commander2.Replace(" ", "-").Replace(",", "");
             }
 
 

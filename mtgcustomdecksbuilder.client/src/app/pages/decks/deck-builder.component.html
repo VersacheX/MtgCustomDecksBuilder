@@ -122,8 +122,8 @@
               <th mat-header-cell *matHeaderCellDef width="10%"> </th>
               <td mat-cell *matCellDef="let card" width="10%">
                 <mat-menu #menu="matMenu">
-                  <button *ngIf="isLegendaryCreature(card)" mat-menu-item (click)="SetCardAsPartner(card)">Set Partner</button>
-                  <button *ngIf="isLegendaryCreature(card)" mat-menu-item (click)="SetCardAsCommander(card)">Set Commander</button>
+                  <button *ngIf="isLegendaryCreature(card) || canBeCommander(card)" mat-menu-item (click)="SetCardAsPartner(card)">Set Partner</button>
+                  <button *ngIf="isLegendaryCreature(card) || canBeCommander(card)" mat-menu-item (click)="SetCardAsCommander(card)">Set Commander</button>
                   <button mat-menu-item (click)="openCardDetails(card)">Detail</button>
                   <button mat-menu-item (click)="RemoveCard(card)">Remove</button>
                 </mat-menu>

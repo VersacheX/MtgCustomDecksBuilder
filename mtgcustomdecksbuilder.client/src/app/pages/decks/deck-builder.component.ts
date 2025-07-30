@@ -359,6 +359,17 @@ export class DeckBuilderComponent extends DetailComponent implements OnInit {
     return supertypes.includes('legendary') && types.includes('creature');
   }
 
+  canBeCommander(card: any): boolean {
+    const types = card.Types.toLowerCase().split(',').map(type => type.trim());
+    const supertypes = card.SuperTypes.toLowerCase().split(',').map(supertype => supertype.trim());
+
+    if (supertypes.includes('legendary') && types.includes('creature')) return true;
+    if (supertypes.includes('legendary') && types.includes('planeswalker') && card.Text.indexOf("can be your commander") > -1) return true;
+    if (supertypes.includes('legendary') && card.Power > 0 && card.Toughness > 0) return true;
+
+    return false;
+  }
+
   toggleImportTable() {
     this.showImportTable = !this.showImportTable;
   }

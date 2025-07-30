@@ -1,8 +1,10 @@
-﻿using System.IO.Compression;
+﻿using Microsoft.Extensions.Logging;
+using System.IO.Compression;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 
-namespace MtgCustomDecksBuilder.Server.Services
+namespace Services
 {
     public class ScryfallService
     {

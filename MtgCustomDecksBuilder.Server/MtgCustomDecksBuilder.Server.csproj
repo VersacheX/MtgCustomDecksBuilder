@@ -39,6 +39,7 @@
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="..\Persistence\Persistence.csproj" />
+    <ProjectReference Include="..\Services\MtgDeckBuilderServices.csproj" />
   </ItemGroup>
 
   <ItemGroup>

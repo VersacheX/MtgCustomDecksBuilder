@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Microsoft.Extensions.Caching.Memory;
 using MtgCustomDecksBuilder.Server.Tools;
+using MtgDeckBuilderServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -153,14 +154,14 @@ var app = builder.Build();
 //}
 
 // Load bulk data into cache in a scoped service -- do not w3ait     --- scryfall data
-Task.Run(async () =>
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        var bulkDataLoader = scope.ServiceProvider.GetRequiredService<BulkDataLoaderService>();
-        await bulkDataLoader.LoadBulkDataAsync();
-    }
-});
+//Task.Run(async () =>
+//{
+//    using (var scope = app.Services.CreateScope())
+//    {
+//        var bulkDataLoader = scope.ServiceProvider.GetRequiredService<BulkDataLoaderService>();
+//        await bulkDataLoader.LoadBulkDataAsync();
+//    }
+//});
 
 // Load card data from db for faster control response in things like lookup dropdowns
 using (var scope = app.Services.CreateScope())
