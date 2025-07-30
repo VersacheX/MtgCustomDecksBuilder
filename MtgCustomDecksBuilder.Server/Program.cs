@@ -18,7 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<BulkDataLoaderService>();
-builder.Services.AddTransient<ScryfallService>();
+//builder.Services.AddTransient<ScryfallService>();
 builder.Services.AddTransient<ImageProcessor>();
 
 var allowSpecificOrigins = "_allowClientOrigin";
@@ -146,11 +146,11 @@ var app = builder.Build();
 
 
 // Load bulk data into cache in a scoped service -- do not w3ait     --- scryfall data
-using (var scope = app.Services.CreateScope())
-{
-    var dumpService = scope.ServiceProvider.GetRequiredService<ScryfallService>();
-    await dumpService.GetDumpAsync();
-}
+//using (var scope = app.Services.CreateScope())
+//{
+//    var dumpService = scope.ServiceProvider.GetRequiredService<ScryfallService>();
+//    await dumpService.GetDumpAsync();
+//}
 
 // Load bulk data into cache in a scoped service -- do not w3ait     --- scryfall data
 Task.Run(async () =>

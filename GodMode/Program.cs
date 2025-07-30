@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Persistence.Schema;
 using System.Net.Http.Headers;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
@@ -42,21 +43,32 @@ namespace God
             var dbContext = scope.ServiceProvider.GetRequiredService<MtgCustomDecksBuilderContext>();
             #endregion
 
+            var admin = dbContext.Users.FirstOrDefault();
+                admin.Password = ComputeSha256Hash(admin.Password, "EXAMPLE_SALT_DO_NOT_USE_IN_PROD");
 
+            dbContext.SaveChanges();
 
-            var deckRuleCriterion = dbContext.DeckRuleCriteria
-                .Include(d => d.GameFormatFkNavigation)
-                .Include(d => d.DeckRuleCriteriaAllowedSets)
-                    .ThenInclude(allowedSet => allowedSet.MtgSetFkNavigation)
-                .Include(d => d.DeckRuleCriteriaSetTypes)
-                    .ThenInclude(setType => setType.SetTypeFkNavigation)
-                .First();
-            EdhrecDto dto = await EdhrecApi.SourceEdhRecData(new EdhrecApi.EdhrecSearchCriteria()
-            {
-                CommanderName = "Nicol Bolas",
-                Homebrew = HomebrewDto.FromEntity(deckRuleCriterion)
-            }, null);
+            //var deckRuleCriterion = dbContext.DeckRuleCriteria
+            //    .Include(d => d.GameFormatFkNavigation)
+            //    .Include(d => d.DeckRuleCriteriaAllowedSets)
+            //        .ThenInclude(allowedSet => allowedSet.MtgSetFkNavigation)
+            //    .Include(d => d.DeckRuleCriteriaSetTypes)
+            //        .ThenInclude(setType => setType.SetTypeFkNavigation)
+            //    .First();
+            //EdhrecDto dto = await EdhrecApi.SourceEdhRecData(new EdhrecApi.EdhrecSearchCriteria()
+            //{
+            //    CommanderName = "Nicol Bolas",
+            //    Homebrew = HomebrewDto.FromEntity(deckRuleCriterion)
+            //}, null);
         }
+        public static string ComputeSha256Hash(string input, string salt)
+        {
+            using var sha256 = SHA256.Create();
+            var bytes = Encoding.UTF8.GetBytes(input + salt);
+            var hashBytes = sha256.ComputeHash(bytes);
+            return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+        }
+
 
         static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)

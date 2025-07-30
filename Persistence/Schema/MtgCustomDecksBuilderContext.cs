@@ -30,6 +30,12 @@ namespace Persistence.Schema
         public virtual DbSet<MtgFormat> MtgFormats { get; set; } = null!;
         public virtual DbSet<MtgSet> MtgSets { get; set; } = null!;
         public virtual DbSet<MtgSetType> MtgSetTypes { get; set; } = null!;
+        public virtual DbSet<ScryfallCard> ScryfallCards { get; set; } = null!;
+        public virtual DbSet<ScryfallCardImageUri> ScryfallCardImageUris { get; set; } = null!;
+        public virtual DbSet<ScryfallCardLegality> ScryfallCardLegalities { get; set; } = null!;
+        public virtual DbSet<ScryfallCardPrice> ScryfallCardPrices { get; set; } = null!;
+        public virtual DbSet<ScryfallCardPurchaseUri> ScryfallCardPurchaseUris { get; set; } = null!;
+        public virtual DbSet<ScryfallCardRelatedUri> ScryfallCardRelatedUris { get; set; } = null!;
         public virtual DbSet<User> Users { get; set; } = null!;
         public virtual DbSet<UserDeck> UserDecks { get; set; } = null!;
         public virtual DbSet<UserDeckCard> UserDeckCards { get; set; } = null!;
@@ -365,6 +371,318 @@ namespace Persistence.Schema
                 entity.Property(e => e.MtgSetTypePk).HasColumnName("MtgSetTypePK");
 
                 entity.Property(e => e.Name).HasMaxLength(20);
+            });
+
+            modelBuilder.Entity<ScryfallCard>(entity =>
+            {
+                entity.HasKey(e => e.ScryfallCardPk)
+                    .HasName("PK__Scryfall__55F7FF0019119203");
+
+                entity.ToTable("ScryfallCard");
+
+                entity.Property(e => e.ScryfallCardPk).HasColumnName("ScryfallCardPK");
+
+                entity.Property(e => e.ArenaId).HasColumnName("Arena_Id");
+
+                entity.Property(e => e.Artist).HasMaxLength(100);
+
+                entity.Property(e => e.ArtistIds)
+                    .HasMaxLength(200)
+                    .HasColumnName("Artist_Ids");
+
+                entity.Property(e => e.BorderColor)
+                    .HasMaxLength(20)
+                    .HasColumnName("Border_Color");
+
+                entity.Property(e => e.CardBackId)
+                    .HasMaxLength(50)
+                    .HasColumnName("Card_Back_Id");
+
+                entity.Property(e => e.CollectorNumber)
+                    .HasMaxLength(10)
+                    .HasColumnName("Collector_Number");
+
+                entity.Property(e => e.ColorIdentity)
+                    .HasMaxLength(50)
+                    .HasColumnName("Color_Identity");
+
+                entity.Property(e => e.Colors).HasMaxLength(50);
+
+                entity.Property(e => e.Finishes).HasMaxLength(50);
+
+                entity.Property(e => e.Frame).HasMaxLength(20);
+
+                entity.Property(e => e.FullArt).HasColumnName("Full_Art");
+
+                entity.Property(e => e.GameChanger).HasColumnName("Game_Changer");
+
+                entity.Property(e => e.Games).HasMaxLength(50);
+
+                entity.Property(e => e.HighresImage).HasColumnName("Highres_Image");
+
+                entity.Property(e => e.Id).HasMaxLength(50);
+
+                entity.Property(e => e.IllustrationId)
+                    .HasMaxLength(50)
+                    .HasColumnName("Illustration_Id");
+
+                entity.Property(e => e.ImageStatus)
+                    .HasMaxLength(50)
+                    .HasColumnName("Image_Status");
+
+                entity.Property(e => e.Lang).HasMaxLength(10);
+
+                entity.Property(e => e.Layout).HasMaxLength(50);
+
+                entity.Property(e => e.ManaCost)
+                    .HasMaxLength(50)
+                    .HasColumnName("Mana_Cost");
+
+                entity.Property(e => e.MtgoId).HasColumnName("Mtgo_Id");
+
+                entity.Property(e => e.MultiverseIds).HasColumnName("Multiverse_Ids");
+
+                entity.Property(e => e.Name).HasMaxLength(100);
+
+                entity.Property(e => e.Object).HasMaxLength(50);
+
+                entity.Property(e => e.OracleId)
+                    .HasMaxLength(50)
+                    .HasColumnName("Oracle_Id");
+
+                entity.Property(e => e.OracleText).HasColumnName("Oracle_Text");
+
+                entity.Property(e => e.PrintsSearchUri)
+                    .HasMaxLength(200)
+                    .HasColumnName("Prints_Search_Uri");
+
+                entity.Property(e => e.ProducedMana)
+                    .HasMaxLength(50)
+                    .HasColumnName("Produced_Mana");
+
+                entity.Property(e => e.Rarity).HasMaxLength(50);
+
+                entity.Property(e => e.ReleasedAt)
+                    .HasColumnType("date")
+                    .HasColumnName("Released_At");
+
+                entity.Property(e => e.RulingsUri)
+                    .HasMaxLength(200)
+                    .HasColumnName("Rulings_Uri");
+
+                entity.Property(e => e.ScryfallSetUri)
+                    .HasMaxLength(200)
+                    .HasColumnName("Scryfall_Set_Uri");
+
+                entity.Property(e => e.ScryfallUri)
+                    .HasMaxLength(200)
+                    .HasColumnName("Scryfall_Uri");
+
+                entity.Property(e => e.Set).HasMaxLength(50);
+
+                entity.Property(e => e.SetId)
+                    .HasMaxLength(50)
+                    .HasColumnName("Set_Id");
+
+                entity.Property(e => e.SetName)
+                    .HasMaxLength(100)
+                    .HasColumnName("Set_Name");
+
+                entity.Property(e => e.SetSearchUri)
+                    .HasMaxLength(200)
+                    .HasColumnName("Set_Search_Uri");
+
+                entity.Property(e => e.SetType)
+                    .HasMaxLength(50)
+                    .HasColumnName("Set_Type");
+
+                entity.Property(e => e.SetUri)
+                    .HasMaxLength(200)
+                    .HasColumnName("Set_Uri");
+
+                entity.Property(e => e.StorySpotlight).HasColumnName("Story_Spotlight");
+
+                entity.Property(e => e.TcgplayerId).HasColumnName("Tcgplayer_Id");
+
+                entity.Property(e => e.TypeLine)
+                    .HasMaxLength(100)
+                    .HasColumnName("Type_Line");
+
+                entity.Property(e => e.Uri).HasMaxLength(200);
+            });
+
+            modelBuilder.Entity<ScryfallCardImageUri>(entity =>
+            {
+                entity.HasKey(e => e.ScryfallCardImageUrisPk)
+                    .HasName("PK__Scryfall__DA5005DD11C55432");
+
+                entity.Property(e => e.ScryfallCardImageUrisPk).HasColumnName("ScryfallCardImageUrisPK");
+
+                entity.Property(e => e.ArtCrop)
+                    .HasMaxLength(200)
+                    .HasColumnName("Art_Crop");
+
+                entity.Property(e => e.BorderCrop)
+                    .HasMaxLength(200)
+                    .HasColumnName("Border_Crop");
+
+                entity.Property(e => e.Large).HasMaxLength(200);
+
+                entity.Property(e => e.Normal).HasMaxLength(200);
+
+                entity.Property(e => e.Png).HasMaxLength(200);
+
+                entity.Property(e => e.ScryfallCardFk).HasColumnName("ScryfallCardFK");
+
+                entity.Property(e => e.Small).HasMaxLength(200);
+
+                entity.HasOne(d => d.ScryfallCardFkNavigation)
+                    .WithMany(p => p.ScryfallCardImageUris)
+                    .HasForeignKey(d => d.ScryfallCardFk)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__ScryfallC__Scryf__51300E55");
+            });
+
+            modelBuilder.Entity<ScryfallCardLegality>(entity =>
+            {
+                entity.HasKey(e => e.ScryfallCardLegalitiesPk)
+                    .HasName("PK__Scryfall__1FD65129E5913B68");
+
+                entity.Property(e => e.ScryfallCardLegalitiesPk).HasColumnName("ScryfallCardLegalitiesPK");
+
+                entity.Property(e => e.Alchemy).HasMaxLength(20);
+
+                entity.Property(e => e.Brawl).HasMaxLength(20);
+
+                entity.Property(e => e.Commander).HasMaxLength(20);
+
+                entity.Property(e => e.Duel).HasMaxLength(20);
+
+                entity.Property(e => e.Explorer).HasMaxLength(20);
+
+                entity.Property(e => e.Future).HasMaxLength(20);
+
+                entity.Property(e => e.Gladiator).HasMaxLength(20);
+
+                entity.Property(e => e.Historic).HasMaxLength(20);
+
+                entity.Property(e => e.Legacy).HasMaxLength(20);
+
+                entity.Property(e => e.Modern).HasMaxLength(20);
+
+                entity.Property(e => e.Oathbreaker).HasMaxLength(20);
+
+                entity.Property(e => e.Oldschool).HasMaxLength(20);
+
+                entity.Property(e => e.Pauper).HasMaxLength(20);
+
+                entity.Property(e => e.Paupercommander).HasMaxLength(20);
+
+                entity.Property(e => e.Penny).HasMaxLength(20);
+
+                entity.Property(e => e.Pioneer).HasMaxLength(20);
+
+                entity.Property(e => e.Predh).HasMaxLength(20);
+
+                entity.Property(e => e.Premodern).HasMaxLength(20);
+
+                entity.Property(e => e.ScryfallCardFk).HasColumnName("ScryfallCardFK");
+
+                entity.Property(e => e.Standard).HasMaxLength(20);
+
+                entity.Property(e => e.Standardbrawl).HasMaxLength(20);
+
+                entity.Property(e => e.Timeless).HasMaxLength(20);
+
+                entity.Property(e => e.Vintage).HasMaxLength(20);
+
+                entity.HasOne(d => d.ScryfallCardFkNavigation)
+                    .WithMany(p => p.ScryfallCardLegalities)
+                    .HasForeignKey(d => d.ScryfallCardFk)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__ScryfallC__Scryf__540C7B00");
+            });
+
+            modelBuilder.Entity<ScryfallCardPrice>(entity =>
+            {
+                entity.HasKey(e => e.ScryfallCardPricesPk)
+                    .HasName("PK__Scryfall__280AB38DB4BB99F2");
+
+                entity.Property(e => e.ScryfallCardPricesPk).HasColumnName("ScryfallCardPricesPK");
+
+                entity.Property(e => e.Eur).HasMaxLength(20);
+
+                entity.Property(e => e.EurFoil)
+                    .HasMaxLength(20)
+                    .HasColumnName("Eur_Foil");
+
+                entity.Property(e => e.ScryfallCardFk).HasColumnName("ScryfallCardFK");
+
+                entity.Property(e => e.Tix).HasMaxLength(20);
+
+                entity.Property(e => e.Usd).HasMaxLength(20);
+
+                entity.Property(e => e.UsdEtched)
+                    .HasMaxLength(20)
+                    .HasColumnName("Usd_Etched");
+
+                entity.Property(e => e.UsdFoil)
+                    .HasMaxLength(20)
+                    .HasColumnName("Usd_Foil");
+
+                entity.HasOne(d => d.ScryfallCardFkNavigation)
+                    .WithMany(p => p.ScryfallCardPrices)
+                    .HasForeignKey(d => d.ScryfallCardFk)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__ScryfallC__Scryf__56E8E7AB");
+            });
+
+            modelBuilder.Entity<ScryfallCardPurchaseUri>(entity =>
+            {
+                entity.HasKey(e => e.ScryfallCardPurchaseUrisPk)
+                    .HasName("PK__Scryfall__4133D2573C7E5A15");
+
+                entity.Property(e => e.ScryfallCardPurchaseUrisPk).HasColumnName("ScryfallCardPurchaseUrisPK");
+
+                entity.Property(e => e.Cardmarket).HasMaxLength(200);
+
+                entity.Property(e => e.ScryfallCardFk).HasColumnName("ScryfallCardFK");
+
+                entity.Property(e => e.Tcgplayer).HasMaxLength(200);
+
+                entity.HasOne(d => d.ScryfallCardFkNavigation)
+                    .WithMany(p => p.ScryfallCardPurchaseUris)
+                    .HasForeignKey(d => d.ScryfallCardFk)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__ScryfallC__Scryf__5CA1C101");
+            });
+
+            modelBuilder.Entity<ScryfallCardRelatedUri>(entity =>
+            {
+                entity.HasKey(e => e.ScryfallCardRelatedUrisPk)
+                    .HasName("PK__Scryfall__A63F278693DC0795");
+
+                entity.Property(e => e.ScryfallCardRelatedUrisPk).HasColumnName("ScryfallCardRelatedUrisPK");
+
+                entity.Property(e => e.Edhrec).HasMaxLength(200);
+
+                entity.Property(e => e.Gatherer).HasMaxLength(200);
+
+                entity.Property(e => e.ScryfallCardFk).HasColumnName("ScryfallCardFK");
+
+                entity.Property(e => e.TcgplayerInfiniteArticles)
+                    .HasMaxLength(200)
+                    .HasColumnName("Tcgplayer_Infinite_Articles");
+
+                entity.Property(e => e.TcgplayerInfiniteDecks)
+                    .HasMaxLength(200)
+                    .HasColumnName("Tcgplayer_Infinite_Decks");
+
+                entity.HasOne(d => d.ScryfallCardFkNavigation)
+                    .WithMany(p => p.ScryfallCardRelatedUris)
+                    .HasForeignKey(d => d.ScryfallCardFk)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__ScryfallC__Scryf__59C55456");
             });
 
             modelBuilder.Entity<User>(entity =>

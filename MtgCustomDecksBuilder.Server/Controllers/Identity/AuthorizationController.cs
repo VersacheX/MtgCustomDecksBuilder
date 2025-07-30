@@ -5,6 +5,8 @@ using MtgCustomDecksBuilder.Server.Models.Identity;
 using MtgCustomDecksBuilder.Server.Services;
 using Persistence.Schema;
 using System.Data;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace MtgCustomDecksBuilder.Server.Controllers.Identity
 {
@@ -13,11 +15,13 @@ namespace MtgCustomDecksBuilder.Server.Controllers.Identity
     {
         private IJwtTokenManager _jwtService { get; set; }
         private MtgCustomDecksBuilderContext _masterContext { get; set; }
+        private IConfiguration _configuration { get; set; }
 
-        public AuthorizationController(IJwtTokenManager jwtService, MtgCustomDecksBuilderContext masterContext)
+        public AuthorizationController(IJwtTokenManager jwtService, MtgCustomDecksBuilderContext masterContext, IConfiguration configuration)
         {
             _jwtService = jwtService;
             _masterContext = masterContext;
+            _configuration = configuration;
         }
 
         [AllowAnonymous]
@@ -26,10 +30,14 @@ namespace MtgCustomDecksBuilder.Server.Controllers.Identity
         {
             if (model == null)
                 return BadRequest();
-
-            User user = _masterContext.Users.Where(x=>x.Username == model.Username && x.Password == model.Password).FirstOrDefault();
             
-            if(user != null)
+            User user = _masterContext.Users
+                    .FirstOrDefault(x => x.Username == model.Username);
+
+            if (user == null || !VerifyPassword(model.Password, user.Password))
+                return Unauthorized();
+
+            if (user != null)
             {
                 model = new UserCredential()
                 {
@@ -65,6 +73,21 @@ namespace MtgCustomDecksBuilder.Server.Controllers.Identity
             }
 
             return Unauthorized();
+        }
+
+        private bool VerifyPassword(string inputPassword, string storedHash)
+        {
+            var salt = _configuration["PasswordHashing:Salt"];
+            var inputHash = ComputeSha256Hash(inputPassword, salt);
+            return inputHash == storedHash;
+        }
+
+        public static string ComputeSha256Hash(string input, string salt)
+        {
+            using var sha256 = SHA256.Create();
+            var bytes = Encoding.UTF8.GetBytes(input + salt);
+            var hashBytes = sha256.ComputeHash(bytes);
+            return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
         }
 
         [Authorize]
