@@ -60,16 +60,16 @@ namespace Services
             using var decompressedStream2 = new GZipStream(gzipStream, CompressionMode.Decompress);
 
             // 👇 Parse directly from stream — avoids loading whole string into memory first
-            using var doc2 = await JsonDocument.ParseAsync(decompressedStream2);
-            var root2 = doc2.RootElement; // This will be the array of cards
+            //using var doc2 = await JsonDocument.ParseAsync(decompressedStream2);
+            //var root2 = doc2.RootElement; // This will be the array of cards
 
-            //var filePath = $"C:\\temp\\scryfall_allcards_{DateTime.UtcNow:yyyyMMdd_HHmmss}.json";
-            //Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+            var filePath = $"C:\\temp\\scryfall_allcards_{DateTime.UtcNow:yyyyMMdd_HHmmss}.json";
+            Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
 
-            //using var fileStream = File.Create(filePath);
-            //await decompressedStream2.CopyToAsync(fileStream);
+            using var fileStream = File.Create(filePath);
+            await decompressedStream2.CopyToAsync(fileStream);
 
-            //Console.WriteLine($"Card data saved to: {filePath}");
+            Console.WriteLine($"Card data saved to: {filePath}");
 
         }
     }

@@ -5,24 +5,83 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Persistence.Schema;
 using System.IO.Compression;
+using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 
 
 namespace MtgDeckBuilderServices
 {
     public class BulkDataLoaderService
     {
-        private readonly IMemoryCache _cache;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly MtgCustomDecksBuilderContext _masterContext;
 
-        public BulkDataLoaderService(IMemoryCache cache, IHttpClientFactory httpClientFactory, MtgCustomDecksBuilderContext masterContext)
+        public BulkDataLoaderService(IHttpClientFactory httpClientFactory, MtgCustomDecksBuilderContext masterContext)
         {
-            _cache = cache;
             _httpClientFactory = httpClientFactory;
             _masterContext = masterContext;
         }
+
+        public async Task GetDumpToFileAsync(string filePath = $"C:\\temp\\scryfall_allcards_current.json")
+        {
+            //var filePath = $"C:\\temp\\scryfall_allcards_{DateTime.UtcNow:yyyyMMdd_HHmmss}.json";
+
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Clear();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (...) Chrome/127.0.0.0 Safari/537.36");
+            client.DefaultRequestHeaders.AcceptEncoding.ParseAdd("gzip");
+            client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("en-US,en;q=0.9");
+
+            var response = await client.GetAsync("https://api.scryfall.com/bulk-data");
+            var raw = await response.Content.ReadAsStreamAsync();
+
+            //var gzipStream = await client.GetStreamAsync("https://api.scryfall.com/bulk-data"); 
+            using var decompressedStream = new GZipStream(raw, CompressionMode.Decompress);
+            using var reader = new StreamReader(decompressedStream);
+            var json = await reader.ReadToEndAsync();
+
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            var dataArray = root.GetProperty("data").EnumerateArray();
+
+            string? allCardsUri = null;
+            foreach (var item in dataArray)
+            {
+                if (item.GetProperty("type").GetString() == "all_cards" &&
+                    item.TryGetProperty("download_uri", out var uriProp))
+                {
+                    allCardsUri = uriProp.GetString();
+                    break;
+                }
+            }
+
+            if (string.IsNullOrEmpty(allCardsUri))
+            {
+                Console.WriteLine("No 'all_cards' bulk file found.");
+                return;
+            }
+
+            Console.WriteLine($"Downloading from: {allCardsUri}");
+            using var gzipStream = await client.GetStreamAsync(allCardsUri);
+            using var decompressedStream2 = new GZipStream(gzipStream, CompressionMode.Decompress);
+
+            // 👇 Parse directly from stream — avoids loading whole string into memory first
+            //using var doc2 = await JsonDocument.ParseAsync(decompressedStream2);
+            //var root2 = doc2.RootElement; // This will be the array of cards
+
+            Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+
+            using var fileStream = File.Create(filePath);
+            await decompressedStream2.CopyToAsync(fileStream);
+
+            Console.WriteLine($"Card data saved to: {filePath}");
+
+        }
+
+
         public async Task LoadBulkDataAsync()
         {
             string bulkDataUrl = "https://api.scryfall.com/bulk-data";
@@ -52,7 +111,7 @@ namespace MtgDeckBuilderServices
                         using var jsonReader = new JsonTextReader(reader);
 
                         var cards = new List<ScryfallCardDto>();
-                        var serializer = new JsonSerializer();
+                        var serializer = new Newtonsoft.Json.JsonSerializer();
                         int currentCard = 0;
                         while (await jsonReader.ReadAsync())
                         {
@@ -60,15 +119,14 @@ namespace MtgDeckBuilderServices
                             if (jsonReader.TokenType == JsonToken.StartObject)
                             {
                                 var card = serializer.Deserialize<ScryfallCardDto>(jsonReader);
-                                cards.Add(card);
 
-                                var existCard = _masterContext.ScryfallCards
-                                                        .Include(x => x.ScryfallCardImageUris)
-                                                        .Include(x => x.ScryfallCardLegalities)
-                                                        .Include(x => x.ScryfallCardPrices)
-                                                        .Include(x => x.ScryfallCardPurchaseUris)
-                                                        .Include(x => x.ScryfallCardRelatedUris)
-                                                        .FirstOrDefault(x => x.Id == card.Id);
+                                ScryfallCard existCard = _masterContext.ScryfallCards
+                                                            .Include(x => x.ScryfallCardImageUris)
+                                                            .Include(x => x.ScryfallCardLegalities)
+                                                            .Include(x => x.ScryfallCardPrices)
+                                                            .Include(x => x.ScryfallCardPurchaseUris)
+                                                            .Include(x => x.ScryfallCardRelatedUris)
+                                                            .FirstOrDefault(x => x.Id == card.Id);
 
 
                                 if (existCard == null)
@@ -121,10 +179,6 @@ namespace MtgDeckBuilderServices
                                 // Process, cache, index, or buffer — without blowing memory
                             }
                         }
-
-                        // Cache the card data
-                        _cache.Set("CardData", cards);
-                        Console.WriteLine("Bulk card data loaded into cache.");
                     }
                     else
                     {
@@ -165,9 +219,6 @@ namespace MtgDeckBuilderServices
             }
         }
 
-        /// <summary>
-        /// Determines if a type is a basic scalar type safe for copying
-        /// </summary>
         private static bool IsSimpleType(Type type)
         {
             var typeInfo = type.IsGenericType ? type.GetGenericTypeDefinition() : type;

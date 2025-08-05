@@ -35,7 +35,7 @@ builder.Services.AddCors(options =>
         });
 });
 
-// Add services to the container.
+// Add authentication dbcontext, defaultidentity and authentication services
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseInMemoryDatabase(connectionString));
@@ -44,6 +44,13 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
                 options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    // Default Lockout settings.
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.AllowedForNewUsers = true;
+});
 
 builder.Services.AddAuthentication(option =>
 {
@@ -78,8 +85,12 @@ builder.Services.AddAuthentication(option =>
         };
     });
 
+builder.Services.AddScoped<TokenManagerMiddleware>();
+builder.Services.AddScoped<IJwtTokenManager, JwtTokenManager>();
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-//ADD CONTEXT CONNECTIONS
+
+//ADD APPLICATION CONTEXT CONNECTIONS
 //TO SCAFFOLD THIS DB USE: dotnet ef dbcontext scaffold "Data Source=DESKTOP-3K6IPDC;Initial Catalog=MtgCustomDecksBuilder;Integrated Security=True;Trust Server Certificate=True" Microsoft.EntityFrameworkCore.SqlServer -o Schema --force
 builder.Services.AddDbContext<MtgCustomDecksBuilderContext>(options =>
 {
@@ -90,38 +101,27 @@ builder.Services.AddDbContext<MtgCustomDecksBuilderContext>(options =>
 #endif
 });
 
-builder.Services.AddTransient<TokenManagerMiddleware>();
-builder.Services.AddTransient<IJwtTokenManager, JwtTokenManager>();
-builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 builder.Services.AddSingleton<MtgApiManager.Lib.Service.IMtgServiceProvider, MtgApiManager.Lib.Service.MtgServiceProvider>();
+
 builder.Services.AddDistributedMemoryCache();
 
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-    options.JsonSerializerOptions.PropertyNamingPolicy = null;
-}).AddNewtonsoftJson(options =>
-{
-    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-    options.SerializerSettings.ContractResolver = new DefaultContractResolver
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
     {
-        NamingStrategy = new DefaultNamingStrategy() // Ensures Pascal case
-    };
-});
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.PropertyNamingPolicy = null;
+    })
+    .AddNewtonsoftJson(options =>
+    {
+        options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+        options.SerializerSettings.ContractResolver = new DefaultContractResolver
+        {
+            NamingStrategy = new DefaultNamingStrategy() // Ensures Pascal case
+        };
+    });
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-
-
-builder.Services.Configure<IdentityOptions>(options =>
-{
-    // Default Lockout settings.
-    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-    options.Lockout.MaxFailedAccessAttempts = 5;
-    options.Lockout.AllowedForNewUsers = true;
-});
-
-//adding jwt auth
-builder.Services.AddScoped<IJwtTokenManager, JwtTokenManager>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {

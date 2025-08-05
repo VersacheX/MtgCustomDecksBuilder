@@ -6,6 +6,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using MtgDeckBuilderServices;
 using Persistence.Schema;
 using System.Net.Http;
@@ -49,11 +50,18 @@ namespace God
             #endregion
 
             // Instantiate the loader and run it
-            var loader = new BulkDataLoaderService(memoryCache, httpClientFactory, dbContext);
-            await loader.LoadBulkDataAsync();
+            try
+            {
+                var loader = new BulkDataLoaderService(httpClientFactory, dbContext);
+                await loader.LoadBulkDataAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Occorued: " + ex.ToString());
+            }
 
-
-
+            Console.WriteLine("Press enter to exit");
+            Console.ReadLine();
             //var admin = dbContext.Users.FirstOrDefault();
             //    admin.Password = ComputeSha256Hash(admin.Password, "EXAMPLE_SALT_DO_NOT_USE_IN_PROD");
 
@@ -88,7 +96,12 @@ namespace God
                     // Register EF Core DbContext
                     services.AddDbContext<MtgCustomDecksBuilderContext>(options =>
                     {
-                        options.UseSqlServer("Data Source=DESKTOP-3K6IPDC;Initial Catalog=MtgCustomDecksBuilder;Integrated Security=True;Trust Server Certificate=True");
+                        var silentLoggerFactory = LoggerFactory.Create(builder => {
+                            builder.SetMinimumLevel(LogLevel.None); // No logs emitted
+                        });
+
+                        options.UseSqlServer("Data Source=DESKTOP-3K6IPDC;Initial Catalog=MtgCustomDecksBuilder;Integrated Security=True;Trust Server Certificate=True")
+                            .UseLoggerFactory(silentLoggerFactory);
 #if DEBUG
                         //options.EnableSensitiveDataLogging(); // Enable sensitive data logging
                         //options.EnableDetailedErrors(); // Enable detailed error messages
