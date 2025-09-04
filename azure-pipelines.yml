@@ -58,8 +58,8 @@ steps:
     script: 'npm install'
 
 - script: |
-    cd src/client
     npm run build -- --configuration staging
+  workingDirectory: 'mtgcustomdecksbuilder.client'
   displayName: 'Build Angular Client (Staging)'
 
 - task: PublishBuildArtifacts@1
@@ -67,10 +67,11 @@ steps:
     pathToPublish: 'mtgcustomdecksbuilder.client'
     artifactName: 'client-staging'
     publishLocation: 'Container'
+  displayName: 'Publish Angular Client (Staging)'
 
 - script: |
-    cd src/client
     npm run build -- --configuration production
+  workingDirectory: 'mtgcustomdecksbuilder.client'
   displayName: 'Build Angular Client (Production)'
 
 - task: PublishBuildArtifacts@1
@@ -78,15 +79,18 @@ steps:
     pathToPublish: 'mtgcustomdecksbuilder.client'
     artifactName: 'client-production'
     publishLocation: 'Container'
+  displayName: 'Publish Angular Client (Production)'
 
 - task: PublishBuildArtifacts@1
   inputs:
     pathToPublish: '$(build.artifactStagingDirectory)/WebApp.Staging.zip'
     artifactName: 'server-staging'
     publishLocation: 'Container'
+  displayName: 'Publish Angular Server (Production)'
 
 - task: PublishBuildArtifacts@1
   inputs:
     pathToPublish: '$(build.artifactStagingDirectory)/WebApp.Production.zip'
     artifactName: 'server-production'
     publishLocation: 'Container'
+  displayName: 'Publish Angular Server (Production)'
