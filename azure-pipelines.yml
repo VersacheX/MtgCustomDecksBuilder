@@ -17,7 +17,7 @@ variables:
 
 steps:
 
-- script: dir $(Build.SourcesDirectory)
+- script: dir $(Build.SourcesDirectory)\MtgCustomDecksBuilder.Server
   displayName: 'List Repo Root Contents'
 
 - task: NuGetToolInstaller@1
