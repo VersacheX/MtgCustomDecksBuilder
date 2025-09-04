@@ -16,10 +16,6 @@ variables:
   buildConfigurationStaging: 'Stg'
 
 steps:
-
-- script: dir $(Build.SourcesDirectory)\MtgCustomDecksBuilder.Server
-  displayName: 'List Repo Root Contents'
-
 - task: NuGetToolInstaller@1
 
 - task: NuGetCommand@2
@@ -52,10 +48,11 @@ steps:
     versionSpec: '18.x'
   displayName: 'Install Node.js'
 
-- script: |
-    cd src/client
-    npm ci
+- task: CmdLine@2
   displayName: 'Install Angular Dependencies'
+  inputs:
+    workingDirectory: 'dist/mtgcustomdecksbuilder.client'
+    script: 'npm install'
 
 - script: |
     cd src/client
