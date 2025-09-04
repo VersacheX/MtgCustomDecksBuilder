@@ -51,7 +51,7 @@ steps:
 - task: CmdLine@2
   displayName: 'Install Angular Dependencies'
   inputs:
-    workingDirectory: 'dist/mtgcustomdecksbuilder.client'
+    workingDirectory: 'mtgcustomdecksbuilder.client'
     script: 'npm install'
 
 - script: |
