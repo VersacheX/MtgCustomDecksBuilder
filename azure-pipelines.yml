@@ -16,14 +16,15 @@ variables:
   buildConfigurationStaging: 'Stg'
 
 steps:
+
+- script: dir $(Build.SourcesDirectory)
+  displayName: 'List Repo Root Contents'
+
 - task: NuGetToolInstaller@1
 
 - task: NuGetCommand@2
   inputs:
     restoreSolution: '$(solution)'
-
-- script: dir $(Build.SourcesDirectory)\MyCustomDeckBuilder.Server
-  displayName: 'List Repo Root Contents'
 
 - task: VSBuild@1
   inputs:
