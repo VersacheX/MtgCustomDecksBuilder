@@ -58,7 +58,7 @@ steps:
     script: 'npm install'
 
 - script: |
-    npm run build mtgcustomdecksbuilder.client --configuration staging
+    npm run build mtgcustomdecksbuilder.client --configuration=staging
   workingDirectory: 'mtgcustomdecksbuilder.client'
   displayName: 'Build Angular Client (Staging)'
 
@@ -70,7 +70,7 @@ steps:
   displayName: 'Publish Angular Client (Staging)'
 
 - script: |
-    npm run build mtgcustomdecksbuilder.client --configuration production
+    npm run build mtgcustomdecksbuilder.client --configuration=production
   workingDirectory: 'mtgcustomdecksbuilder.client'
   displayName: 'Build Angular Client (Production)'
 
