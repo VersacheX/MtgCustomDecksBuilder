@@ -12,7 +12,8 @@ pool:
 variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
+  buildConfigurationRelease: 'Release'
+  buildConfigurationStaging: 'Stg'
 
 steps:
 - task: NuGetToolInstaller@1
@@ -24,9 +25,18 @@ steps:
 - task: VSBuild@1
   inputs:
     solution: 'MyCustomDeckBuilder.Server.csproj'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
+    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.Staging.zip" /p:DeployIisAppPath="Default Web Site"'
     platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    configuration: '$(buildConfigurationStaging)'
+  displayName: 'Build Staging Server'
+
+- task: VSBuild@1
+  inputs:
+    solution: 'MyCustomDeckBuilder.Server.csproj'
+    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.Production.zip" /p:DeployIisAppPath="Default Web Site"'
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfigurationRelease)'
+  displayName: 'Build Production Server'
 
 - task: VSTest@2
   inputs:
@@ -40,19 +50,39 @@ steps:
 
 - script: |
     cd src/client
-    npm install
-    npm run build -- --configuration production
-  displayName: 'Build Angular Client'
+    npm ci
+  displayName: 'Install Angular Dependencies'
+
+- script: |
+    cd src/client
+    npm run build -- --configuration staging
+  displayName: 'Build Angular Client (Staging)'
 
 - task: PublishBuildArtifacts@1
   inputs:
     pathToPublish: 'dist/mtgcustomdecksbuilder.client'
-    artifactName: 'client-drop'
+    artifactName: 'client-staging'
+    publishLocation: 'Container'
+
+- script: |
+    cd src/client
+    npm run build -- --configuration production
+  displayName: 'Build Angular Client (Production)'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: 'dist/mtgcustomdecksbuilder.client'
+    artifactName: 'client-production'
     publishLocation: 'Container'
 
 - task: PublishBuildArtifacts@1
   inputs:
-    pathToPublish: '$(build.artifactStagingDirectory)/WebApp.zip'
-    artifactName: 'server-drop'
+    pathToPublish: '$(build.artifactStagingDirectory)/WebApp.Staging.zip'
+    artifactName: 'server-staging'
     publishLocation: 'Container'
 
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: '$(build.artifactStagingDirectory)/WebApp.Production.zip'
+    artifactName: 'server-production'
+    publishLocation: 'Container'
