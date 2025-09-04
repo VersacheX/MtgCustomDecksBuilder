@@ -22,12 +22,12 @@ steps:
   inputs:
     restoreSolution: '$(solution)'
 
-- script: dir $(Build.SourcesDirectory)
+- script: dir $(Build.SourcesDirectory)\MyCustomDeckBuilder.Server
   displayName: 'List Repo Root Contents'
 
 - task: VSBuild@1
   inputs:
-    solution: 'MyCustomDeckBuilder.Server.csproj'
+    solution: 'MyCustomDeckBuilder.Server/MyCustomDeckBuilder.Server.csproj'
     msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.Staging.zip" /p:DeployIisAppPath="Default Web Site"'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfigurationStaging)'
@@ -35,7 +35,7 @@ steps:
 
 - task: VSBuild@1
   inputs:
-    solution: 'MyCustomDeckBuilder.Server.csproj'
+    solution: 'MyCustomDeckBuilder.Server/MyCustomDeckBuilder.Server.csproj'
     msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.Production.zip" /p:DeployIisAppPath="Default Web Site"'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfigurationRelease)'
