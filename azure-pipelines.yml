@@ -16,6 +16,9 @@ variables:
   buildConfigurationStaging: 'Stg'
 
 steps:
+- script: dir $(Build.SourcesDirectory)\MyCustomDeckBuilder.Client
+  displayName: 'List DIR Contents'
+
 - task: NuGetToolInstaller@1
 
 - task: NuGetCommand@2
@@ -61,7 +64,7 @@ steps:
 
 - task: PublishBuildArtifacts@1
   inputs:
-    pathToPublish: 'dist/mtgcustomdecksbuilder.client'
+    pathToPublish: 'mtgcustomdecksbuilder.client/dist/mtgcustomdecksbuilder.client'
     artifactName: 'client-staging'
     publishLocation: 'Container'
 
@@ -72,7 +75,7 @@ steps:
 
 - task: PublishBuildArtifacts@1
   inputs:
-    pathToPublish: 'dist/mtgcustomdecksbuilder.client'
+    pathToPublish: 'mtgcustomdecksbuilder.client/dist/mtgcustomdecksbuilder.client'
     artifactName: 'client-production'
     publishLocation: 'Container'
 
