@@ -64,10 +64,11 @@ steps:
 
 - task: PublishBuildArtifacts@1
   inputs:
-    pathToPublish: 'mtgcustomdecksbuilder.client'
+    pathToPublish: 'mtgcustomdecksbuilder.client/dist/mtgcustomdecksbuilder.client'
     artifactName: 'client-staging'
     publishLocation: 'Container'
   displayName: 'Publish Angular Client (Staging)'
+
 
 - script: |
     npm run build mtgcustomdecksbuilder.client --configuration=production
@@ -76,7 +77,7 @@ steps:
 
 - task: PublishBuildArtifacts@1
   inputs:
-    pathToPublish: 'mtgcustomdecksbuilder.client'
+    pathToPublish: 'mtgcustomdecksbuilder.client/dist/mtgcustomdecksbuilder.client'
     artifactName: 'client-production'
     publishLocation: 'Container'
   displayName: 'Publish Angular Client (Production)'
