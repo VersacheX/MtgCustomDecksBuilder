@@ -16,7 +16,7 @@ variables:
   buildConfigurationStaging: 'Stg'
 
 steps:
-- script: dir $(Build.SourcesDirectory)/mtgcustomdecksbuilder.client
+- script: dir $(Build.SourcesDirectory)\mtgcustomdecksbuilder.client
   displayName: 'List DIR Contents'
 
 - task: NuGetToolInstaller@1
