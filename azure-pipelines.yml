@@ -78,7 +78,7 @@ steps:
   inputs:
     SourceFolder: '$(Build.SourcesDirectory)/mtgcustomdecksbuilder.client'
     Contents: |
-      Dockerfile
+      **/Dockerfile
       dist/**
     TargetFolder: '$(Build.ArtifactStagingDirectory)/docker-client-staging'
 
@@ -98,7 +98,7 @@ steps:
   inputs:
     SourceFolder: 'mtgcustomdecksbuilder.client'
     Contents: |
-      Dockerfile
+      **/Dockerfile
       dist/**
     TargetFolder: '$(Build.ArtifactStagingDirectory)/docker-client-production'
 
