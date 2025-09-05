@@ -75,6 +75,12 @@ steps:
 
 - task: PublishBuildArtifacts@1
   inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)/docker-client-staging'
+    artifactName: 'docker-client-staging'
+    publishLocation: 'Container'
+
+- task: PublishBuildArtifacts@1
+  inputs:
     pathToPublish: 'mtgcustomdecksbuilder.client/dist/mtgcustomdecksbuilder.client'
     artifactName: 'client-staging'
     publishLocation: 'Container'
@@ -104,6 +110,12 @@ steps:
 
 - task: PublishBuildArtifacts@1
   inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)/docker-client-production'
+    artifactName: 'docker-client-production'
+    publishLocation: 'Container'
+
+- task: PublishBuildArtifacts@1
+  inputs:
     pathToPublish: 'mtgcustomdecksbuilder.client/dist/mtgcustomdecksbuilder.client'
     artifactName: 'client-production'
     publishLocation: 'Container'
@@ -125,6 +137,12 @@ steps:
       Dockerfile
       dist/**
     TargetFolder: '$(Build.ArtifactStagingDirectory)/docker-server-staging'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)/docker-server-staging'
+    artifactName: 'docker-server-staging'
+    publishLocation: 'Container'
 
 - task: PublishBuildArtifacts@1
   inputs:
@@ -155,6 +173,12 @@ steps:
       Dockerfile
       dist/**
     TargetFolder: '$(Build.ArtifactStagingDirectory)/docker-server-production'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)/docker-server-production'
+    artifactName: 'docker-server-production'
+    publishLocation: 'Container'
 
 - task: PublishBuildArtifacts@1
   inputs:
