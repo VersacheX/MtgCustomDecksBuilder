@@ -114,12 +114,12 @@ steps:
     artifactName: 'docker-client-production'
     publishLocation: 'Container'
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathToPublish: 'mtgcustomdecksbuilder.client/dist/mtgcustomdecksbuilder.client'
-    artifactName: 'client-production'
-    publishLocation: 'Container'
-  displayName: 'Publish Angular Client (Production)'
+# - task: PublishBuildArtifacts@1
+#   inputs:
+#     pathToPublish: 'mtgcustomdecksbuilder.client/dist/mtgcustomdecksbuilder.client'
+#     artifactName: 'client-production'
+#     publishLocation: 'Container'
+#   displayName: 'Publish Angular Client (Production)'
 
 # - task: Docker@2
 #   displayName: 'Build Angular Client Docker Image (Production)'
