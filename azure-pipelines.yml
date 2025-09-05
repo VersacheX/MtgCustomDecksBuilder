@@ -20,6 +20,9 @@ steps:
   clean: true
   fetchDepth: 0
 
+- script: echo $(Build.SourceVersion) - $(Build.SourceBranch)
+  displayName: 'Display Source Version'
+
 - script: dir $(Build.SourcesDirectory)
   displayName: 'List DIR Contents'
 - script: dir $(Build.SourcesDirectory)\mtgcustomdecksbuilder.client
