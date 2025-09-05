@@ -79,12 +79,12 @@ steps:
     artifactName: 'docker-client-staging'
     publishLocation: 'Container'
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathToPublish: 'mtgcustomdecksbuilder.client/dist/mtgcustomdecksbuilder.client'
-    artifactName: 'client-staging'
-    publishLocation: 'Container'
-  displayName: 'Publish Angular Client (Staging)'
+# - task: PublishBuildArtifacts@1
+#   inputs:
+#     pathToPublish: 'mtgcustomdecksbuilder.client/dist/mtgcustomdecksbuilder.client'
+#     artifactName: 'client-staging'
+#     publishLocation: 'Container'
+#   displayName: 'Publish Angular Client (Staging)'
 
 # - task: Docker@2
 #   displayName: 'Build Angular Client Docker Image (Staging)'
