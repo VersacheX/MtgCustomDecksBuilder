@@ -129,13 +129,18 @@ steps:
 #     buildContext: 'mtgcustomdecksbuilder.client/dist/mtgcustomdecksbuilder.client'
 #     tags: 'mtg-client:production'
 
+- task: ExtractFiles@1
+  displayName: 'Extract .NET Server Artifact (Staging)'
+  inputs:
+    archiveFilePatterns: '$(build.artifactStagingDirectory)/WebApp.Staging.zip'
+    destinationFolder: '$(Build.ArtifactStagingDirectory)/docker-server-staging'
+    cleanDestinationFolder: true
+
 - task: CopyFiles@2
-  displayName: 'Prepare Docker Context for NET Server (Staging)'
+  displayName: 'Add Dockerfile to Server Context (Staging)'
   inputs:
     SourceFolder: 'mtgcustomdecksbuilder.server'
-    Contents: |
-      Dockerfile
-      dist/**
+    Contents: Dockerfile
     TargetFolder: '$(Build.ArtifactStagingDirectory)/docker-server-staging'
 
 - task: PublishBuildArtifacts@1
@@ -144,12 +149,27 @@ steps:
     artifactName: 'docker-server-staging'
     publishLocation: 'Container'
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathToPublish: '$(build.artifactStagingDirectory)/WebApp.Staging.zip'
-    artifactName: 'server-staging'
-    publishLocation: 'Container'
-  displayName: 'Publish .NET Server (Staging)'
+# - task: CopyFiles@2
+#   displayName: 'Prepare Docker Context for NET Server (Staging)'
+#   inputs:
+#     SourceFolder: 'mtgcustomdecksbuilder.server'
+#     Contents: |
+#       Dockerfile
+#       dist/**
+#     TargetFolder: '$(Build.ArtifactStagingDirectory)/docker-server-staging'
+
+# - task: PublishBuildArtifacts@1
+#   inputs:
+#     pathToPublish: '$(Build.ArtifactStagingDirectory)/docker-server-staging'
+#     artifactName: 'docker-server-staging'
+#     publishLocation: 'Container'
+
+# - task: PublishBuildArtifacts@1
+#   inputs:
+#     pathToPublish: '$(build.artifactStagingDirectory)/WebApp.Staging.zip'
+#     artifactName: 'server-staging'
+#     publishLocation: 'Container'
+#   displayName: 'Publish .NET Server (Staging)'
 
 # - task: ExtractFiles@1
 #   inputs:
@@ -165,13 +185,18 @@ steps:
 #     buildContext: '$(Build.ArtifactStagingDirectory)/server-staging'
 #     tags: 'mtg-server:staging'
 
+- task: ExtractFiles@1
+  displayName: 'Extract .NET Server Artifact (Production)'
+  inputs:
+    archiveFilePatterns: '$(build.artifactStagingDirectory)/WebApp.Production.zip'
+    destinationFolder: '$(Build.ArtifactStagingDirectory)/docker-server-production'
+    cleanDestinationFolder: true
+
 - task: CopyFiles@2
-  displayName: 'Prepare Docker Context for NET Server (Production)'
+  displayName: 'Add Dockerfile to Server Context (Production)'
   inputs:
     SourceFolder: 'mtgcustomdecksbuilder.server'
-    Contents: |
-      Dockerfile
-      dist/**
+    Contents: Dockerfile
     TargetFolder: '$(Build.ArtifactStagingDirectory)/docker-server-production'
 
 - task: PublishBuildArtifacts@1
@@ -180,12 +205,27 @@ steps:
     artifactName: 'docker-server-production'
     publishLocation: 'Container'
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathToPublish: '$(build.artifactStagingDirectory)/WebApp.Production.zip'
-    artifactName: 'server-production'
-    publishLocation: 'Container'
-  displayName: 'Publish NET Server (Production)'
+# - task: CopyFiles@2
+#   displayName: 'Prepare Docker Context for NET Server (Production)'
+#   inputs:
+#     SourceFolder: 'mtgcustomdecksbuilder.server'
+#     Contents: |
+#       Dockerfile
+#       dist/**
+#     TargetFolder: '$(Build.ArtifactStagingDirectory)/docker-server-production'
+
+# - task: PublishBuildArtifacts@1
+#   inputs:
+#     pathToPublish: '$(Build.ArtifactStagingDirectory)/docker-server-production'
+#     artifactName: 'docker-server-production'
+#     publishLocation: 'Container'
+
+# - task: PublishBuildArtifacts@1
+#   inputs:
+#     pathToPublish: '$(build.artifactStagingDirectory)/WebApp.Production.zip'
+#     artifactName: 'server-production'
+#     publishLocation: 'Container'
+#   displayName: 'Publish NET Server (Production)'
 
 # - task: ExtractFiles@1
 #   inputs:
