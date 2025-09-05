@@ -69,6 +69,13 @@ steps:
     publishLocation: 'Container'
   displayName: 'Publish Angular Client (Staging)'
 
+- task: Docker@2
+  displayName: 'Build Angular Client Docker Image (Staging)'
+  inputs:
+    command: 'build'
+    dockerfile: 'mtgcustomdecksbuilder.client/Dockerfile'
+    buildContext: 'mtgcustomdecksbuilder.client/dist/mtgcustomdecksbuilder.client'
+    tags: 'mtg-client:staging'
 
 - script: |
     npm run build mtgcustomdecksbuilder.client --configuration=production
@@ -82,16 +89,55 @@ steps:
     publishLocation: 'Container'
   displayName: 'Publish Angular Client (Production)'
 
+# After publishing client-staging
+- task: Docker@2
+  displayName: 'Build Angular Client Docker Image (Production)'
+  inputs:
+    command: 'build'
+    dockerfile: 'mtgcustomdecksbuilder.client/Dockerfile'
+    buildContext: 'mtgcustomdecksbuilder.client/dist/mtgcustomdecksbuilder.client'
+    tags: 'mtg-client:production'
+
+
 - task: PublishBuildArtifacts@1
   inputs:
     pathToPublish: '$(build.artifactStagingDirectory)/WebApp.Staging.zip'
     artifactName: 'server-staging'
     publishLocation: 'Container'
-  displayName: 'Publish Angular Server (Production)'
+  displayName: 'Publish .NET Server (Staging)'
+
+- task: ExtractFiles@1
+  inputs:
+    archiveFilePatterns: '$(build.artifactStagingDirectory)/WebApp.Staging.zip'
+    destinationFolder: '$(Build.ArtifactStagingDirectory)/server-staging'
+    cleanDestinationFolder: true
+
+- task: Docker@2
+  displayName: 'Build .NET Server Docker Image (Staging)'
+  inputs:
+    command: 'build'
+    dockerfile: 'MtgCustomDecksBuilder.Server/Dockerfile'
+    buildContext: '$(Build.ArtifactStagingDirectory)/server-staging'
+    tags: 'mtg-server:staging'
+
 
 - task: PublishBuildArtifacts@1
   inputs:
     pathToPublish: '$(build.artifactStagingDirectory)/WebApp.Production.zip'
     artifactName: 'server-production'
     publishLocation: 'Container'
-  displayName: 'Publish Angular Server (Production)'
+  displayName: 'Publish NET Server (Production)'
+
+- task: ExtractFiles@1
+  inputs:
+    archiveFilePatterns: '$(build.artifactStagingDirectory)/WebApp.Production.zip'
+    destinationFolder: '$(Build.ArtifactStagingDirectory)/server-production'
+    cleanDestinationFolder: true
+
+- task: Docker@2
+  displayName: 'Build .NET Server Docker Image (Production)'
+  inputs:
+    command: 'build'
+    dockerfile: 'MtgCustomDecksBuilder.Server/Dockerfile'
+    buildContext: '$(Build.ArtifactStagingDirectory)/server-production'
+    tags: 'mtg-server:production'
