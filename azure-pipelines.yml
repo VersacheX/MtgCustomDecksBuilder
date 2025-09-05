@@ -64,6 +64,15 @@ steps:
   workingDirectory: 'mtgcustomdecksbuilder.client'
   displayName: 'Build Angular Client (Staging)'
 
+- task: CopyFiles@2
+  displayName: 'Prepare Docker Context for Angular Client (Staging)'
+  inputs:
+    SourceFolder: 'mtgcustomdecksbuilder.client'
+    Contents: |
+      Dockerfile
+      dist/**
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/docker-client-staging'
+
 - task: PublishBuildArtifacts@1
   inputs:
     pathToPublish: 'mtgcustomdecksbuilder.client/dist/mtgcustomdecksbuilder.client'
@@ -84,6 +93,15 @@ steps:
   workingDirectory: 'mtgcustomdecksbuilder.client'
   displayName: 'Build Angular Client (Production)'
 
+- task: CopyFiles@2
+  displayName: 'Prepare Docker Context for Angular Client (Production)'
+  inputs:
+    SourceFolder: 'mtgcustomdecksbuilder.client'
+    Contents: |
+      Dockerfile
+      dist/**
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/docker-client-production'
+
 - task: PublishBuildArtifacts@1
   inputs:
     pathToPublish: 'mtgcustomdecksbuilder.client/dist/mtgcustomdecksbuilder.client'
@@ -99,6 +117,14 @@ steps:
 #     buildContext: 'mtgcustomdecksbuilder.client/dist/mtgcustomdecksbuilder.client'
 #     tags: 'mtg-client:production'
 
+- task: CopyFiles@2
+  displayName: 'Prepare Docker Context for NET Server (Staging)'
+  inputs:
+    SourceFolder: 'mtgcustomdecksbuilder.server'
+    Contents: |
+      Dockerfile
+      dist/**
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/docker-server-staging'
 
 - task: PublishBuildArtifacts@1
   inputs:
@@ -121,6 +147,14 @@ steps:
 #     buildContext: '$(Build.ArtifactStagingDirectory)/server-staging'
 #     tags: 'mtg-server:staging'
 
+- task: CopyFiles@2
+  displayName: 'Prepare Docker Context for NET Server (Production)'
+  inputs:
+    SourceFolder: 'mtgcustomdecksbuilder.server'
+    Contents: |
+      Dockerfile
+      dist/**
+    TargetFolder: '$(Build.ArtifactStagingDirectory)/docker-server-production'
 
 - task: PublishBuildArtifacts@1
   inputs:
