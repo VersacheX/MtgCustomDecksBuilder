@@ -20,6 +20,8 @@ steps:
   clean: true
   fetchDepth: 0
 
+- script: dir $(Build.SourcesDirectory)
+  displayName: 'List DIR Contents'
 - script: dir $(Build.SourcesDirectory)\mtgcustomdecksbuilder.client
   displayName: 'List DIR Contents client'
 - script: dir $(Build.SourcesDirectory)\mtgcustomdecksbuilder.server
