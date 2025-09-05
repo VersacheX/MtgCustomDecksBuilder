@@ -67,7 +67,7 @@ steps:
 - task: CopyFiles@2
   displayName: 'Prepare Docker Context for Angular Client (Staging)'
   inputs:
-    SourceFolder: 'mtgcustomdecksbuilder.client'
+    SourceFolder: '$(Build.SourcesDirectory)/mtgcustomdecksbuilder.client'
     Contents: |
       Dockerfile
       dist/**
